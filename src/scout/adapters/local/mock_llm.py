@@ -10,24 +10,43 @@ import re
 from scout.ports import Completion
 from scout.skills import skills_in
 
-BLOCK = re.compile(r"<<<UNTRUSTED (\w[\w ]*?) \w+>>>\n(.*?)\n<<<END UNTRUSTED \w+>>>", re.S)
+BLOCK = re.compile(r"<<<UNTRUSTED (.+?) ([0-9a-f]{12})>>>\n(.*?)\n<<<END UNTRUSTED \2>>>", re.S)
 PATH = re.compile(r"\b[\w/]+\.py\b")
 
 
 def _blocks(user: str) -> dict[str, str]:
-    return {label: body for label, body in BLOCK.findall(user)}
+    return {label: body for label, _tag, body in BLOCK.findall(user)}
 
 
 class MockLLM:
     def complete(self, model: str, system: str, user: str) -> Completion:
         if "## TASK: CLASSIFY" in user:
             text = self._classify(_blocks(user).get("ISSUE", ""))
+        elif "## TASK: PLAN" in user:
+            text = self._plan(_blocks(user))
         else:
             text = ""
         return Completion(text, (len(system) + len(user) + len(text)) // 4, "mock")
 
     def list_models(self) -> list[str]:
         return ["mock"]
+
+    @staticmethod
+    def _plan(blocks: dict[str, str]) -> str:
+        gap = blocks.get("GAP") or blocks.get("ISSUE", "")
+        title = next((ln[7:] for ln in gap.splitlines() if ln.startswith("Title: ")), "the change")
+        files = [k[5:] for k in blocks if k.startswith("FILE ")] or [
+            "the module named in the issue"
+        ]
+        return "\n".join(
+            [
+                f"1. Read {', '.join(files)} and the existing tests.",
+                f"2. Write a failing test that captures: {title}.",
+                "3. Make the smallest change that makes it pass.",
+                "4. Run the full test suite with pytest.",
+                "5. Open a PR that references the issue and explains the change.",
+            ]
+        )
 
     @staticmethod
     def _classify(issue: str) -> str:
