@@ -5,7 +5,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .env
-.scout-data/
+.scout-data*/
 .forge-data/
 keys/
 *.keypair.json
