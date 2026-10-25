@@ -31,7 +31,12 @@ def main() -> None:
     d.add_argument("bounty_id")
     d.add_argument("--reason", default="disputed from the CLI")
     sub.add_parser("bounties", help="list bounties")
-    sub.add_parser("nightly", help="nightly self-improvement by backtest (Algorithm 4)")
+    ni = sub.add_parser("nightly", help="nightly self-improvement by backtest (Algorithm 4)")
+    ni.add_argument(
+        "--refresh-backtest",
+        action="store_true",
+        help="rebuild the frozen backtest set (scores reset to a new baseline)",
+    )
     v = sub.add_parser("verify", help="check a playbook version hash against the ledger")
     v.add_argument("version", type=int)
     sub.add_parser("models", help="list models on the configured LLM endpoint")
@@ -118,7 +123,7 @@ def main() -> None:
     elif args.cmd == "nightly":
         from scout.improve import nightly
 
-        out = nightly(deps)
+        out = nightly(deps, refresh_backtest=args.refresh_backtest)
     elif args.cmd == "verify":
         from scout.improve import verify
 

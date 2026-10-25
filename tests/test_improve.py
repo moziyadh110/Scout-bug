@@ -100,3 +100,12 @@ def test_best_of_composed_and_single_prefers_single_on_a_tie(deps):
     assert r["composed"]["precision_at_10"] == 0.7
     assert r["chosen"] == {"kind": "best single", "precision_at_10": 0.7} and r["accepted"] == 2
     assert current_playbook(deps)[0].label_boosts == {"good first issue": 1.5}
+
+
+def test_backtest_set_is_frozen_between_runs(deps, monkeypatch):
+    from scout.improve import load_backtest
+
+    first = load_backtest(deps)
+    monkeypatch.setattr(deps.github, "closed_issues", lambda *a, **k: [])  # live data moved on
+    assert [i.issue.key for i in load_backtest(deps)] == [i.issue.key for i in first]
+    assert load_backtest(deps, refresh=True) == []  # an explicit refresh rebuilds

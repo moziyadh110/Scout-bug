@@ -260,9 +260,22 @@ def ensure_seed(deps: Deps, ev: Evaluator) -> PlaybookVersion:
     return commit(deps, pb, None, ev.evaluate(pb), "seed playbook")
 
 
-def nightly(deps: Deps, at: datetime | None = None) -> dict[str, Any]:
+def load_backtest(
+    deps: Deps, at: datetime | None = None, refresh: bool = False
+) -> list[BacktestItem]:
+    """The frozen backtest set, built on first use. Every version is scored on the same issues;
+    a live search changes from day to day, so rebuilding only happens when asked."""
+    data = None if refresh else deps.store.get_json("backtest/set.json")
+    if data:
+        return [BacktestItem.model_validate(i) for i in data]
+    return build_backtest(deps, at)
+
+
+def nightly(
+    deps: Deps, at: datetime | None = None, refresh_backtest: bool = False
+) -> dict[str, Any]:
     s = deps.settings
-    items = build_backtest(deps, at)
+    items = load_backtest(deps, at, refresh_backtest)
     ev = Evaluator(deps, items)
     cur = ensure_seed(deps, ev)
     if cur.eval.mode != deps.mode:
