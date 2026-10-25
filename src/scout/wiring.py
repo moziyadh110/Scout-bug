@@ -6,8 +6,9 @@ from scout.adapters.local.fixture_github import FixtureGitHub
 from scout.adapters.local.fs_store import FsStore
 from scout.adapters.local.inproc_batch import InProcessBatch
 from scout.adapters.local.sandbox import SubprocessSandbox
+from scout.adapters.local.sqlite_ledger import SqliteLedger
 from scout.config import Settings
-from scout.ports import BatchLLM, GitHub, LLMProvider, ObjectStore, Sandbox
+from scout.ports import BatchLLM, GitHub, Ledger, LLMProvider, ObjectStore, Sandbox
 
 
 @dataclass
@@ -18,6 +19,7 @@ class Deps:
     store: ObjectStore
     github: GitHub
     batch: BatchLLM
+    ledger: Ledger
 
     @property
     def mode(self) -> str:
@@ -40,6 +42,7 @@ def build(settings: Settings | None = None) -> Deps:
 
     if s.ledger_kind == "solana":
         raise RuntimeError("the Solana ledger adapter is not implemented yet (Phase 4)")
+    ledger = SqliteLedger(s.scout_data_dir / "ledger.sqlite3")
 
     if s.github_kind == "api":
         raise RuntimeError("the live GitHub adapter is not implemented yet (needs go-ahead)")
@@ -47,7 +50,7 @@ def build(settings: Settings | None = None) -> Deps:
 
     sandbox = SubprocessSandbox(s.sandbox_timeout_seconds, _secrets(s))
     # ponytail: DigitalOcean Batch Inference adapter comes with cloud work; in-process now.
-    return Deps(s, llm, sandbox, store, github, InProcessBatch(llm))
+    return Deps(s, llm, sandbox, store, github, InProcessBatch(llm), ledger)
 
 
 def _secrets(s: Settings) -> list[str]:
