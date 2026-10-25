@@ -132,3 +132,19 @@ def test_webhook_signature_and_event_parsing():
     assert merged_pr("issues", body) is None
     unmerged = body.replace(b'"merged": true', b'"merged": false')
     assert merged_pr("pull_request", unmerged) is None
+
+
+def test_release_waits_for_a_registered_payout_wallet(deps):
+    class NoWallets(type(deps.ledger)):  # type: ignore[misc]
+        def payee_account(self, github_login: str) -> str:
+            raise LookupError(f"no payout wallet registered for {github_login}")
+
+    deps.ledger = NoWallets(deps.settings.scout_data_dir / "ledger.sqlite3")
+    deps.settings.dispute_window_seconds = 0
+    bs = Bounties(deps)
+    b = _funded(deps)
+    bs.on_pr_merged("acme/tinycsv", 21)
+    (s,) = bs.settle_due()
+    assert s.state == BountyState.VERIFIED and "no payout wallet" in s.note
+    assert deps.ledger.balance("escrow") == TEN_USDC  # nothing moved
+    assert bs.get(b.id).state == BountyState.VERIFIED

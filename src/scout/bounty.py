@@ -206,10 +206,15 @@ class Bounties:
             return self._refund(b, "revert", "checks no longer pass at release time")
         if b.amount > self.d.settings.bounty_cap_units:  # re-checked at signing time
             raise BountyError("amount exceeds cap")
+        try:
+            payee = self.d.ledger.payee_account(b.contributor)
+        except LookupError as e:  # stays VERIFIED until the contributor registers a wallet
+            b.note = str(e)
+            return self._save(b)
         att = attestation(b, pr, checks)
         b.settle_ref = self.d.ledger.release(
             f"release:{b.id}",
-            self.d.ledger.payee_account(b.contributor),
+            payee,
             b.amount,
             f"scout:release:{b.id}:{att}",
         )

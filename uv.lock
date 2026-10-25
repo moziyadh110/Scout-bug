@@ -641,14 +641,10 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-multipart" },
-    { name = "tenacity" },
-    { name = "uvicorn" },
-]
-
-[package.optional-dependencies]
-solana = [
     { name = "solana" },
     { name = "solders" },
+    { name = "tenacity" },
+    { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
@@ -668,12 +664,11 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pydantic-settings", specifier = ">=2.4" },
     { name = "python-multipart", specifier = ">=0.0.9" },
-    { name = "solana", marker = "extra == 'solana'", specifier = ">=0.34" },
-    { name = "solders", marker = "extra == 'solana'", specifier = ">=0.21" },
+    { name = "solana", specifier = ">=0.36" },
+    { name = "solders", specifier = ">=0.26" },
     { name = "tenacity", specifier = ">=8.5" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]
-provides-extras = ["solana"]
 
 [package.metadata.requires-dev]
 dev = [

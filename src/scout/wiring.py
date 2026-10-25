@@ -40,9 +40,13 @@ def build(settings: Settings | None = None) -> Deps:
 
         llm = MockLLM()
 
+    ledger: Ledger
     if s.ledger_kind == "solana":
-        raise RuntimeError("the Solana ledger adapter is not implemented yet (Phase 4)")
-    ledger = SqliteLedger(s.scout_data_dir / "ledger.sqlite3")
+        from scout.adapters.cloud.solana_ledger import SolanaLedger
+
+        ledger = SolanaLedger(s)
+    else:
+        ledger = SqliteLedger(s.scout_data_dir / "ledger.sqlite3")
 
     if s.github_kind == "api":
         raise RuntimeError("the live GitHub adapter is not implemented yet (needs go-ahead)")

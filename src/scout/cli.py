@@ -35,7 +35,23 @@ def main() -> None:
     v = sub.add_parser("verify", help="check a playbook version hash against the ledger")
     v.add_argument("version", type=int)
     sub.add_parser("models", help="list models on the configured LLM endpoint")
+    sub.add_parser("solana-setup", help="devnet wallets, SOL for fees, test USDC mint")
+    wl = sub.add_parser("wallet", help="register a contributor's payout address")
+    wl.add_argument("login")
+    wl.add_argument("address")
     args = p.parse_args()
+
+    if args.cmd in ("solana-setup", "wallet"):  # must work before the Solana ledger exists
+        from scout.adapters.cloud.solana_setup import register_wallet, setup
+        from scout.config import Settings
+
+        settings = Settings()
+        if args.cmd == "wallet":
+            register_wallet(settings, args.login, args.address)
+            print(json.dumps({"registered": args.login, "address": args.address}))
+        else:
+            print(json.dumps(setup(settings), indent=2))
+        return
 
     if args.cmd == "serve":
         import uvicorn

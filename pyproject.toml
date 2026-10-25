@@ -14,10 +14,10 @@ dependencies = [
     "pydantic-settings>=2.4",
     "openai>=1.40",
     "tenacity>=8.5",
+    "solana>=0.36",
+    "solders>=0.26",
 ]
 
-[project.optional-dependencies]
-solana = ["solana>=0.34", "solders>=0.21"]
 
 [project.scripts]
 scout = "scout.cli:main"
