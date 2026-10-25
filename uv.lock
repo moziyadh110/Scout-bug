@@ -167,60 +167,6 @@ wheels = [
 ]
 
 [[package]]
-name = "forge"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "fastapi" },
-    { name = "jinja2" },
-    { name = "openai" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-multipart" },
-    { name = "tenacity" },
-    { name = "uvicorn" },
-]
-
-[package.optional-dependencies]
-solana = [
-    { name = "solana" },
-    { name = "solders" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = ">=0.115" },
-    { name = "jinja2", specifier = ">=3.1" },
-    { name = "openai", specifier = ">=1.40" },
-    { name = "pydantic", specifier = ">=2.8" },
-    { name = "pydantic-settings", specifier = ">=2.4" },
-    { name = "python-multipart", specifier = ">=0.0.9" },
-    { name = "solana", marker = "extra == 'solana'", specifier = ">=0.34" },
-    { name = "solders", marker = "extra == 'solana'", specifier = ">=0.21" },
-    { name = "tenacity", specifier = ">=8.5" },
-    { name = "uvicorn", specifier = ">=0.30" },
-]
-provides-extras = ["solana"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "mypy", specifier = ">=1.11" },
-    { name = "pytest", specifier = ">=8" },
-    { name = "pytest-asyncio", specifier = ">=0.23" },
-    { name = "ruff", specifier = ">=0.6" },
-]
-
-[[package]]
 name = "h11"
 version = "0.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -682,6 +628,60 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/d4/c3b74e1b4808438ea7f14bb914478025e2d51261f60774a54a0fa222ec46/ruff-0.17.2-py3-none-win32.whl", hash = "sha256:6bce7d1f5165701ae18f5df85c65afe78cddfa6c5fb4b9bdb0014d60388f3edd", size = 9870537, upload-time = "2026-10-22T18:37:52.486Z" },
     { url = "https://files.pythonhosted.org/packages/1c/9a/c7da96c2c96d20704cf9027f7a5121da272a8c05f1d1531ba949e3b3df04/ruff-0.17.2-py3-none-win_amd64.whl", hash = "sha256:1b59d447f197bef9ef48a22ba1a6016137753c6099e9bac9c36eb566e422424c", size = 10282826, upload-time = "2026-10-22T18:37:55.2Z" },
     { url = "https://files.pythonhosted.org/packages/81/60/a3604c79cb02777b6cb84da894104021986f06c4bc41375102cc95049a32/ruff-0.17.2-py3-none-win_arm64.whl", hash = "sha256:195ad918027f817c119310ca89a42d347887dfc28934aaa869325e9c5dc9d962", size = 9827036, upload-time = "2026-10-22T18:37:58.031Z" },
+]
+
+[[package]]
+name = "scout"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "fastapi" },
+    { name = "jinja2" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-multipart" },
+    { name = "tenacity" },
+    { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+solana = [
+    { name = "solana" },
+    { name = "solders" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "jinja2", specifier = ">=3.1" },
+    { name = "openai", specifier = ">=1.40" },
+    { name = "pydantic", specifier = ">=2.8" },
+    { name = "pydantic-settings", specifier = ">=2.4" },
+    { name = "python-multipart", specifier = ">=0.0.9" },
+    { name = "solana", marker = "extra == 'solana'", specifier = ">=0.34" },
+    { name = "solders", marker = "extra == 'solana'", specifier = ">=0.21" },
+    { name = "tenacity", specifier = ">=8.5" },
+    { name = "uvicorn", specifier = ">=0.30" },
+]
+provides-extras = ["solana"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "mypy", specifier = ">=1.11" },
+    { name = "pytest", specifier = ">=8" },
+    { name = "pytest-asyncio", specifier = ">=0.23" },
+    { name = "ruff", specifier = ">=0.6" },
 ]
 
 [[package]]

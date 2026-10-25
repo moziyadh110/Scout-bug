@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from forge.adapters.local.fs_store import FsStore
+from scout.adapters.local.fs_store import FsStore
 
 
 def test_list_works_with_relative_root(tmp_path, monkeypatch):

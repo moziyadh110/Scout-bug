@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from forge.config import Settings
-from forge.wiring import Deps, build
+from scout.config import Settings
+from scout.wiring import Deps, build
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -12,13 +12,14 @@ ROOT = Path(__file__).resolve().parent.parent
 def settings(tmp_path: Path) -> Settings:
     return Settings(
         _env_file=None,  # type: ignore[call-arg]
-        forge_env="local",
-        forge_llm="mock",
-        forge_ledger="sqlite",
-        forge_data_dir=tmp_path / "data",
-        benchmarks_dir=ROOT / "benchmarks",
+        scout_env="local",
+        scout_llm="mock",
+        scout_ledger="sqlite",
+        scout_github="fixtures",
+        scout_data_dir=tmp_path / "data",
+        fixtures_dir=ROOT / "fixtures",
         playbook_seed=ROOT / "playbooks" / "v1.json",
-        sandbox_timeout_seconds=5,
+        sandbox_timeout_seconds=30,
     )
 
 

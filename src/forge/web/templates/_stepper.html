@@ -1,1 +1,0 @@
-<ol class="stepper">{% for s in steps %}<li class="{{ s.state }}"><span class="dot">{% if s.state == 'done' %}✓{% elif s.state == 'fail' %}✕{% else %}{{ loop.index }}{% endif %}</span>{{ s.label }}</li>{% endfor %}</ol>
