@@ -73,41 +73,42 @@ class Bounties:
         b.run_id = run_id
         self._move(b, "start")
 
-    def settle(self, b: Bounty, run: Run) -> Bounty:
-        """Release only if tests + judge passed and the stored trace matches the attestation."""
-        if now() > b.deadline:
-            self._move(b, "expire")
-        elif run.status == RunStatus.PASSED:
-            stored = self.d.store.get_json(f"traces/{run.id}.json")
-            att = attestation_hash(run)
-            if stored is None or attestation_hash(Run.model_validate(stored)) != att:
-                raise BountyError("trace missing or does not match attestation")
-            if b.amount > self.d.settings.bounty_cap_lamports:  # re-checked at signing time
-                raise BountyError("amount exceeds cap")
-            b.attestation = att
-            self._move(b, "pass")
-            b.settle_ref = self.d.ledger.release(
-                f"release:{b.id}", b.amount, f"forge:attest:{b.id}:{att}"
-            )
-            self._move(b, "release")
-            return b
-        else:
-            self._move(b, "fail")
+    def _refund(self, b: Bounty, event: str) -> Bounty:
+        self._move(b, event)
         b.settle_ref = self.d.ledger.refund(
             f"refund:{b.id}", b.payer, b.amount, f"forge:refund:{b.id}"
         )
         self._move(b, "refund")
         return b
 
+    def settle(self, b: Bounty, run: Run) -> Bounty:
+        """Release only if tests + judge passed and the stored trace matches the attestation."""
+        if now() > b.deadline:
+            return self._refund(b, "expire")
+        if run.status != RunStatus.PASSED:
+            return self._refund(b, "fail")
+        stored = self.d.store.get_json(f"traces/{run.id}.json")
+        att = attestation_hash(run)
+        if stored is None or attestation_hash(Run.model_validate(stored)) != att:
+            raise BountyError("trace missing or does not match attestation")
+        if b.amount > self.d.settings.bounty_cap_lamports:  # re-checked at signing time
+            raise BountyError("amount exceeds cap")
+        b.attestation = att
+        self._move(b, "pass")
+        b.settle_ref = self.d.ledger.release(
+            f"release:{b.id}", b.amount, f"forge:attest:{b.id}:{att}"
+        )
+        self._move(b, "release")
+        return b
+
+    def abort(self, b: Bounty) -> Bounty:
+        """The run crashed before settling: refund. VERIFIED is left for a release retry."""
+        return self._refund(b, "fail") if b.state == S.RUNNING else b
+
     def sweep_expired(self) -> list[Bounty]:
         """Refund bounties stuck past their deadline (e.g. after a crash)."""
-        swept = []
-        for b in self.all():
-            if b.state in (S.LOCKED, S.RUNNING) and now() > b.deadline:
-                self._move(b, "expire")
-                b.settle_ref = self.d.ledger.refund(
-                    f"refund:{b.id}", b.payer, b.amount, f"forge:refund:{b.id}"
-                )
-                self._move(b, "refund")
-                swept.append(b)
-        return swept
+        return [
+            self._refund(b, "expire")
+            for b in self.all()
+            if b.state in (S.LOCKED, S.RUNNING) and now() > b.deadline
+        ]

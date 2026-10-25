@@ -18,7 +18,10 @@ def test_end_to_end_bounty_flow(deps):
 
         with client.stream("GET", f"/runs/{run_id}/events") as s:
             body = "".join(s.iter_text())
-        assert "event: close" in body and "Tests passed" in body and "Bounty released" in body
+        assert (
+            "event: close" in body and "Sandbox tests passed" in body and "Bounty released" in body
+        )
+        assert "event: stepper" in body and "Payout" in body
 
         for _ in range(50):  # the worker thread finishes just after the last event
             page = client.get(f"/runs/{run_id}").text
@@ -48,4 +51,4 @@ def test_dashboard_and_verify(deps):
     ensure_seed(deps)
     with TestClient(create_app(deps)) as client:
         assert "v1" in client.get("/dashboard").text
-        assert "verified" in client.post("/verify/1").text
+        assert "matches ledger" in client.post("/verify/1").text

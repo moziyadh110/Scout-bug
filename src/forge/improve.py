@@ -169,6 +169,11 @@ def _proposals(text: str, cur: Playbook) -> list[tuple[dict[str, Any], Playbook,
 
 def nightly(deps: Deps, k: int = 3) -> dict[str, Any]:
     cur = ensure_seed(deps)
+    if cur.eval.mode != deps.mode:  # never compare mock scores against real ones
+        raise RuntimeError(
+            f"the registry holds {cur.eval.mode} versions but the LLM is {deps.mode}; "
+            "use a separate FORGE_DATA_DIR per mode"
+        )
     tasks = load_tasks(deps.settings.benchmarks_dir)
     train = [t for t in tasks if t.split == "train"]
     report: dict[str, Any] = {

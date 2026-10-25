@@ -30,7 +30,7 @@ class MockLLM:
             text = self._improve(user)
         else:
             text = ""
-        return Completion(text, (len(user) + len(text)) // 4)
+        return Completion(text, (len(user) + len(text)) // 4, "mock")
 
     def _code(self, user: str) -> str:
         code = user.split("## CODE", 1)[1]

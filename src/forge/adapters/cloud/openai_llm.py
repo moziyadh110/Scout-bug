@@ -32,4 +32,4 @@ class OpenAICompatLLM:
         )
         text = r.choices[0].message.content or ""
         tokens = r.usage.total_tokens if r.usage else 0
-        return Completion(text, tokens)
+        return Completion(text, tokens, r.model or model)

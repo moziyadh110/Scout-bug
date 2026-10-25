@@ -23,8 +23,16 @@ MAX_OUTPUT = 4000
 
 
 class SubprocessSandbox:
-    def __init__(self, timeout_seconds: int) -> None:
+    def __init__(self, timeout_seconds: int, secrets: list[str] | None = None) -> None:
         self.timeout = timeout_seconds
+        self.secrets = [s for s in secrets or [] if len(s) >= 8]
+
+    def _redact(self, out: str) -> str:
+        # ponytail: exact-match only; encoded exfiltration gets through. Cloud mode needs a
+        # sandbox that cannot read the host filesystem at all.
+        for s in self.secrets:
+            out = out.replace(s, "[REDACTED]")
+        return out[-MAX_OUTPUT:]
 
     def run_tests(self, repo_dir: Path, files: dict[str, str]) -> TestResult:
         with tempfile.TemporaryDirectory(prefix="forge-sbx-") as tmp:
@@ -59,6 +67,5 @@ class SubprocessSandbox:
                     if isinstance(e.stdout, bytes)
                     else (e.stdout or "")
                 )
-                return TestResult(124, f"TIMEOUT after {self.timeout}s\n{out[-MAX_OUTPUT:]}", True)
-            out = proc.stdout + proc.stderr
-            return TestResult(proc.returncode, out[-MAX_OUTPUT:], False)
+                return TestResult(124, self._redact(f"TIMEOUT after {self.timeout}s\n{out}"), True)
+            return TestResult(proc.returncode, self._redact(proc.stdout + proc.stderr), False)

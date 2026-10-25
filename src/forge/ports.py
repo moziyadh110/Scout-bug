@@ -9,6 +9,7 @@ from typing import Any, Protocol
 class Completion:
     text: str
     tokens: int
+    model: str = ""  # the model that actually answered, as reported by the provider
 
 
 @dataclass

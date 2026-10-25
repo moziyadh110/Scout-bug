@@ -1,63 +1,123 @@
 {% extends "base.html" %}
+{% macro state_pill(s) -%}
+<span class="pill {{ 'ok' if s == 'released' else 'bad' if s in ('refunded', 'expired', 'failed') else 'warn' }}">{{ s }}</span>
+{%- endmacro %}
 {% block body %}
-{% if error %}<div class="card bad"><b>{{ error }}</b></div>{% endif %}
-<div class="grid">
-  <div class="card"><div class="muted">Payer <code>{{ payer[:10] }}</code></div><b>{{ balances.payer | sol }} SOL</b></div>
-  <div class="card"><div class="muted">Escrow</div><b>{{ balances.escrow | sol }} SOL</b></div>
-  <div class="card"><div class="muted">Forge treasury</div><b>{{ balances.treasury | sol }} SOL</b></div>
-  <div class="card"><div class="muted">Playbook</div><b>{{ 'v' ~ version if version else 'seed (unversioned)' }}</b></div>
+<style>
+  .hero h1 { font-size:clamp(1.5rem, 3vw, 2.1rem); letter-spacing:-.03em; margin:.2rem 0 .4rem; }
+  .hero p { margin:0; color:var(--muted); max-width:60ch; }
+  .flow { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:1rem; }
+  .flow span { font-size:.8rem; padding:.3rem .7rem; border-radius:99px; background:var(--card); border:1px solid var(--line); }
+  .flow span b { color:var(--accent); margin-right:.25rem; }
+  .tabs > input { display:none; }
+  .tabs > label { display:inline-block; margin:0 .3rem 1rem 0; padding:.45rem .9rem; border-radius:99px;
+                  border:1px solid var(--line); cursor:pointer; color:var(--muted); font-weight:600; }
+  .tabs > input:checked + label { background:var(--accent-soft); color:var(--accent); border-color:transparent; }
+  .tabs .panel { display:none; }
+  #tab-bench:checked ~ .p-bench, #tab-paste:checked ~ .p-paste { display:block; }
+  .wallet { display:flex; justify-content:space-between; padding:.55rem 0; border-bottom:1px solid var(--line); }
+  .wallet:last-child { border:0; }
+  .wallet b { font-variant-numeric:tabular-nums; }
+</style>
+
+<section class="hero" style="margin-bottom:1.4rem">
+  <span class="pill accent">AI dev team · paid per fix</span>
+  <h1>Post a bug, lock a bounty, watch it get fixed.</h1>
+  <p>Forge plans a fix, writes the patch, proves it in a sandbox against your tests, and only then releases
+    the bounty. Every night it rewrites its own playbook, and keeps the changes only if they score higher.</p>
+  <div class="flow">
+    <span><b>1</b>Lock bounty</span><span><b>2</b>Plan</span><span><b>3</b>Patch</span>
+    <span><b>4</b>Sandbox tests</span><span><b>5</b>Judge</span><span><b>6</b>Payout or refund</span>
+  </div>
+</section>
+
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+<div class="grid g4" style="margin-bottom:1rem">
+  <div class="card stat"><div class="k">Bugs fixed &amp; paid</div><div class="v">{{ stats.fixed }}</div>
+    <div class="s">{{ stats.refunded }} refunded · {{ stats.open }} in progress</div></div>
+  <div class="card stat"><div class="k">Paid out</div><div class="v">{{ stats.paid | sol }} <span class="small muted">SOL</span></div>
+    <div class="s">{% if stats.success is not none %}{{ stats.success }}% of settled bounties{% else %}no settled bounties yet{% endif %}</div></div>
+  <div class="card stat"><div class="k">Playbook</div>
+    <div class="v">{{ 'v' ~ version.version if version else 'seed' }}</div>
+    <div class="s">{% if version %}holdout {{ (version.eval.holdout_pass_rate * 100) | round | int }}% · {{ version.eval.mode }}{% else %}not benchmarked yet{% endif %}</div></div>
+  <div class="card stat"><div class="k">Benchmark</div><div class="v">{{ bench_tasks | length }}</div>
+    <div class="s">{{ bench_tasks | selectattr('split', 'eq', 'holdout') | list | length }} holdout · QuixBugs (MIT)</div></div>
+</div>
+
+<div class="grid g2">
+  <div class="card">
+    <h2>Post a bounty</h2>
+    <div class="tabs">
+      <input type="radio" name="tab" id="tab-bench" {{ 'checked' if tab != 'paste' }}><label for="tab-bench">Benchmark bug</label>
+      {% if user_bugs %}<input type="radio" name="tab" id="tab-paste" {{ 'checked' if tab == 'paste' }}><label for="tab-paste">Paste your own</label>{% endif %}
+
+      <div class="panel p-bench">
+        <form method="post" action="/bounties">
+          <label>Bug
+            <select name="task_id">
+              <optgroup label="Benchmark">
+                {% for t in bench_tasks %}<option value="{{ t.name }}">{{ t.name }} · {{ t.difficulty }}</option>{% endfor %}
+              </optgroup>
+              {% if user_tasks %}<optgroup label="Submitted">
+                {% for t in user_tasks %}<option value="{{ t.name }}">{{ t.name }}</option>{% endfor %}
+              </optgroup>{% endif %}
+            </select></label>
+          <label>Bounty <span class="hint">SOL, max {{ cap | sol }}</span>
+            <input name="amount_sol" type="number" step="0.001" min="0.001" max="{{ cap / 1000000000 }}" value="0.01"></label>
+          <button type="submit">Lock bounty &amp; start →</button>
+        </form>
+        <details style="margin-top:1rem"><summary>Read the bug reports</summary>
+          {% for t in bench_tasks + user_tasks %}<p style="margin:.8rem 0 0"><b>{{ t.name }}</b> <span class="pill">{{ t.split }}</span></p><pre>{{ t.issue }}</pre>{% endfor %}
+        </details>
+      </div>
+
+      {% if user_bugs %}
+      <div class="panel p-paste">
+        <form method="post" action="/bugs">
+          <p class="muted small" style="margin-top:0">Forge runs your test first. If it already passes there's no bug,
+            so the submission is rejected and nothing is locked. Pasted bugs never count toward benchmark scores.</p>
+          <label>Name <span class="hint">becomes &lt;name&gt;.py and test_&lt;name&gt;.py</span>
+            <input name="name" required pattern="[a-z_][a-z0-9_]{1,40}" placeholder="average"></label>
+          <label>What's wrong
+            <textarea name="issue" required rows="2" style="font-family:inherit" placeholder="average() crashes on an empty list; it should return 0.0."></textarea></label>
+          <label>Buggy code <span class="hint">&lt;name&gt;.py</span>
+            <textarea name="code" required rows="6" placeholder="def average(xs):&#10;    return sum(xs) // len(xs)"></textarea></label>
+          <label>Failing test <span class="hint">test_&lt;name&gt;.py · import with from &lt;name&gt; import …</span>
+            <textarea name="test" required rows="6" placeholder="from average import average&#10;&#10;def test_empty():&#10;    assert average([]) == 0.0"></textarea></label>
+          <label>Bounty <span class="hint">SOL, max {{ cap | sol }}</span>
+            <input name="amount_sol" type="number" step="0.001" min="0.001" max="{{ cap / 1000000000 }}" value="0.01"></label>
+          <button type="submit">Check bug &amp; lock bounty →</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Wallets</h2>
+    <div class="wallet"><span>Payer <span class="muted mono small">{{ payer[:12] }}{{ '…' if payer | length > 12 }}</span></span><b>{{ balances.payer | sol }} SOL</b></div>
+    <div class="wallet"><span>Escrow <span class="muted small">locked bounties</span></span><b>{{ balances.escrow | sol }} SOL</b></div>
+    <div class="wallet"><span>Forge treasury <span class="muted small">earned</span></span><b>{{ balances.treasury | sol }} SOL</b></div>
+    <p class="muted small" style="margin-bottom:0">Only backend code signs payouts, after tests and the judge pass.
+      Bounties are capped at {{ cap | sol }} SOL.</p>
+  </div>
 </div>
 
 <div class="card">
-  <h3 style="margin-top:0">Submit a bug &amp; lock a bounty</h3>
-  <form method="post" action="/bounties" style="display:flex; gap:.6rem; flex-wrap:wrap; align-items:end">
-    <label>Bug<br>
-      <select name="task_id">
-        {% for t in tasks %}<option value="{{ t.name }}">{{ t.name }} ({{ t.difficulty }})</option>{% endfor %}
-      </select></label>
-    <label>Bounty (SOL, max {{ cap | sol }})<br>
-      <input name="amount_sol" type="number" step="0.001" min="0.001" max="{{ cap / 1000000000 }}" value="0.01"></label>
-    <button type="submit">Lock bounty &amp; start</button>
-  </form>
-  <details style="margin-top:.8rem"><summary class="muted">Issue texts</summary>
-    {% for t in tasks %}<p><b>{{ t.name }}</b></p><pre>{{ t.issue }}</pre>{% endfor %}
-  </details>
-</div>
-
-{% if user_bugs %}
-<div class="card">
-  <h3 style="margin-top:0">Report a new bug</h3>
-  <p class="muted" style="margin-top:0">Paste the buggy code and a pytest test that fails on it. Forge runs the
-    test first and rejects the bug if the test already passes. Pasted bugs get bounties but never count toward
-    benchmark scores.</p>
-  <form method="post" action="/bugs" style="display:grid; gap:.6rem">
-    <label>Name (becomes <code>&lt;name&gt;.py</code> and <code>test_&lt;name&gt;.py</code>)<br>
-      <input name="name" required pattern="[a-z_][a-z0-9_]{1,40}" placeholder="average"></label>
-    <label>What's wrong<br>
-      <textarea name="issue" required rows="3" style="width:100%" placeholder="average() crashes on an empty list; it should return 0.0."></textarea></label>
-    <label>Buggy code (<code>&lt;name&gt;.py</code>)<br>
-      <textarea name="code" required rows="8" style="width:100%; font-family:monospace" placeholder="def average(xs):&#10;    return sum(xs) // len(xs)"></textarea></label>
-    <label>Test code (<code>test_&lt;name&gt;.py</code>, import with <code>from &lt;name&gt; import ...</code>)<br>
-      <textarea name="test" required rows="8" style="width:100%; font-family:monospace" placeholder="from average import average&#10;&#10;def test_empty():&#10;    assert average([]) == 0.0"></textarea></label>
-    <label>Bounty (SOL, max {{ cap | sol }})<br>
-      <input name="amount_sol" type="number" step="0.001" min="0.001" max="{{ cap / 1000000000 }}" value="0.01"></label>
-    <div><button type="submit">Check bug &amp; lock bounty</button></div>
-  </form>
-</div>
-{% endif %}
-
-<div class="card">
-  <h3 style="margin-top:0">Bounties</h3>
-  <table>
-    <tr><th>Bug</th><th>Amount</th><th>State</th><th>Run</th><th>Settlement</th></tr>
+  <div class="row" style="justify-content:space-between"><h2 style="margin:0">Bounty board</h2>
+    <span class="muted small">{{ bounties | length }} total</span></div>
+  <div class="scroll"><table style="margin-top:.6rem">
+    <tr><th>Bug</th><th>Bounty</th><th>State</th><th>Run</th><th>Settlement</th><th>Posted</th></tr>
     {% for b in bounties %}
     <tr>
-      <td>{{ b.task_id }}</td><td>{{ b.amount | sol }} SOL</td>
-      <td><span class="pill {{ 'ok' if b.state == 'released' else 'bad' if b.state == 'refunded' else '' }}">{{ b.state.value }}</span></td>
-      <td>{% if b.run_id %}<a href="/runs/{{ b.run_id }}">{{ b.run_id }}</a>{% endif %}</td>
-      <td>{% if b.settle_ref %}{% set u = explorer(b.settle_ref) %}{% if u %}<a href="{{ u }}" target="_blank">{{ b.settle_ref[:12] }}…</a>{% else %}<code>{{ b.settle_ref }}</code>{% endif %}{% endif %}</td>
+      <td><b>{{ b.task_id }}</b></td><td>{{ b.amount | sol }} SOL</td>
+      <td>{{ state_pill(b.state.value) }}</td>
+      <td>{% if b.run_id %}<a href="/runs/{{ b.run_id }}">view run →</a>{% endif %}</td>
+      <td class="mono small">{% if b.settle_ref %}{% set u = explorer(b.settle_ref) %}{% if u %}<a href="{{ u }}" target="_blank">{{ b.settle_ref[:10] }}… ↗</a>{% else %}{{ b.settle_ref[:18] }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+      <td class="muted small">{{ b.created_at.strftime('%H:%M:%S') }}</td>
     </tr>
-    {% else %}<tr><td colspan="5" class="muted">No bounties yet.</td></tr>{% endfor %}
-  </table>
+    {% else %}<tr><td colspan="6" class="muted">No bounties yet. Post the first one above.</td></tr>{% endfor %}
+  </table></div>
 </div>
 {% endblock %}

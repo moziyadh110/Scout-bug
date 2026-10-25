@@ -15,7 +15,16 @@ from forge.ports import LLMProvider, Memory, Sandbox
 
 Emit = Callable[[str, dict[str, Any]], None]
 
-FILE_BLOCK = re.compile(r"### FILE:\s*(\S+)\s*\n```[a-z]*\n(.*?)```", re.S)
+# Tolerates "## FILE: `x.py`" and fences like ```py or ```python3 from real models.
+FILE_BLOCK = re.compile(r"#+\s*FILE:\s*[`'\"]?([\w./-]+?)[`'\"]?\s*\n```[^\n]*\n(.*?)```", re.S)
+VERDICT_PASS = re.compile(r"^\W*(verdict\W*)?pass\b", re.I)
+
+
+def judge_passed(verdict: str) -> bool:
+    """Accept 'PASS', '**PASS**', 'Verdict: PASS'; anything else is a fail."""
+    return bool(VERDICT_PASS.match(verdict))
+
+
 THINK = re.compile(r"<think>.*?</think>", re.S)
 
 
@@ -124,7 +133,12 @@ class Agent:
         text = THINK.sub("", c.text).strip()
         run.prompts.append(
             PromptRecord(
-                role=role, model=model, system=system, user=user, response=text, tokens=c.tokens
+                role=role,
+                model=c.model or model,
+                system=system,
+                user=user,
+                response=text,
+                tokens=c.tokens,
             )
         )
         run.tokens += c.tokens
@@ -213,7 +227,7 @@ class Agent:
                 )
                 attempt.judge_verdict = verdict.splitlines()[0] if verdict else "FAIL: empty"
                 emit("judge", {"verdict": attempt.judge_verdict})
-                if attempt.judge_verdict.upper().startswith("PASS"):
+                if judge_passed(attempt.judge_verdict):
                     run.status, run.finished_at = RunStatus.PASSED, now()
                     emit("done", {"status": "passed"})
                     return run

@@ -51,6 +51,14 @@ def build(settings: Settings | None = None) -> Deps:
     else:
         ledger = SqliteLedger(s.forge_data_dir / "ledger.sqlite3")
 
-    return Deps(
-        s, llm, SubprocessSandbox(s.sandbox_timeout_seconds), store, TfidfMemory(store), ledger
-    )
+    sandbox = SubprocessSandbox(s.sandbox_timeout_seconds, _secrets(s))
+    return Deps(s, llm, sandbox, store, TfidfMemory(store), ledger)
+
+
+def _secrets(s: Settings) -> list[str]:
+    """Values that must never appear in sandbox output (it goes back to the LLM and the UI)."""
+    out = [s.llm_api_key]
+    for kp in (s.solana_escrow_keypair, s.solana_treasury_keypair, s.solana_payer_keypair):
+        if kp.exists():
+            out.append(kp.read_text().strip())
+    return out

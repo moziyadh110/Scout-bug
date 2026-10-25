@@ -2,6 +2,7 @@ import hashlib
 import json
 import math
 import re
+import threading
 from collections import Counter
 
 from forge.ports import ObjectStore
@@ -18,14 +19,16 @@ class TfidfMemory:
 
     def __init__(self, store: ObjectStore) -> None:
         self.store = store
+        self._lock = threading.Lock()  # ponytail: in-process only; web + nightly CLI can still race
 
     def _docs(self) -> list[dict[str, str]]:
         return self.store.get_json(KEY) or []
 
     def add(self, doc_id: str, task_id: str, text: str, example: str) -> None:
-        docs = [d for d in self._docs() if d["id"] != doc_id]
-        docs.append({"id": doc_id, "task": task_id, "text": text, "example": example})
-        self.store.put_json(KEY, docs)
+        with self._lock:
+            docs = [d for d in self._docs() if d["id"] != doc_id]
+            docs.append({"id": doc_id, "task": task_id, "text": text, "example": example})
+            self.store.put_json(KEY, docs)
 
     def search(self, query: str, k: int, exclude_task: str | None = None) -> list[str]:
         docs = [d for d in self._docs() if d["task"] != exclude_task]

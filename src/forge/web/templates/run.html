@@ -1,27 +1,57 @@
 {% extends "base.html" %}
-{% block title %}Run {{ run_id }} · Forge{% endblock %}
+{% block title %}{{ task.name }} · Forge{% endblock %}
 {% block body %}
+<style>
+  .stepper { list-style:none; display:flex; gap:.4rem; padding:0; margin:0; flex-wrap:wrap; }
+  .stepper li { flex:1; min-width:110px; display:flex; align-items:center; gap:.5rem; padding:.6rem .7rem;
+                border-radius:12px; background:var(--soft); color:var(--muted); font-weight:600; font-size:.88rem; }
+  .stepper .dot { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:.78rem;
+                  background:var(--card); border:1px solid var(--line); flex:none; }
+  .stepper li.done { color:var(--ok); } .stepper li.done .dot { background:var(--ok); color:var(--card); border:0; }
+  .stepper li.active { color:var(--accent); background:var(--accent-soft); }
+  .stepper li.active .dot { border-color:var(--accent); animation:pulse 1.2s infinite; }
+  .stepper li.fail { color:var(--bad); background:var(--bad-soft); } .stepper li.fail .dot { background:var(--bad); color:var(--card); border:0; }
+  @keyframes pulse { 50% { box-shadow:0 0 0 5px color-mix(in srgb, var(--accent) 25%, transparent); } }
+  .ev { padding:.9rem 0; border-bottom:1px dashed var(--line); }
+  .ev:first-child { padding-top:0; }
+  .ev-h { display:flex; align-items:center; gap:.5rem; font-weight:700; }
+  .ev-h .ic { width:1.5rem; text-align:center; }
+  .result { margin-top:1rem; border-radius:var(--radius); padding:1rem 1.2rem; display:flex; gap:1rem;
+            justify-content:space-between; align-items:center; flex-wrap:wrap; }
+  .result.ok { background:var(--ok-soft); color:var(--ok); } .result.bad { background:var(--bad-soft); color:var(--bad); }
+  .result .big { font-size:1.25rem; font-weight:800; }
+  .result a:not(.btn) { color:inherit; text-decoration:underline; }
+</style>
+
+<p class="small" style="margin:0 0 .6rem"><a href="/">← All bounties</a></p>
 <div class="card">
-  <h3 style="margin-top:0">{{ task.name }} <span class="muted">· run {{ run_id }}</span></h3>
-  {% if bounty %}<p>Bounty: <b>{{ bounty.amount | sol }} SOL</b> ·
-    state <span class="pill">{{ bounty.state.value }}</span>
-    {% if bounty.escrow_ref %}{% set u = explorer(bounty.escrow_ref) %} · lock tx
-      {% if u %}<a href="{{ u }}" target="_blank">{{ bounty.escrow_ref[:12] }}…</a>{% else %}<code>{{ bounty.escrow_ref }}</code>{% endif %}{% endif %}
-  </p>{% endif %}
-  <details><summary class="muted">Issue</summary><pre>{{ task.issue }}</pre></details>
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <h2 style="margin:0; font-size:1.4rem">{{ task.name }} <span class="pill">{{ task.difficulty }}</span></h2>
+      <div class="muted small mono">run {{ run_id }}{% if models %} · {{ models | join(', ') }}{% endif %}</div>
+    </div>
+    {% if bounty %}<div style="text-align:right">
+      <div style="font-size:1.4rem; font-weight:800">{{ bounty.amount | sol }} SOL</div>
+      <div class="small muted">locked
+        {% if bounty.escrow_ref %}{% set u = explorer(bounty.escrow_ref) %}{% if u %}<a href="{{ u }}" target="_blank">tx ↗</a>{% else %}<span class="mono">{{ bounty.escrow_ref[:14] }}</span>{% endif %}{% endif %}</div>
+    </div>{% endif %}
+  </div>
+  <details style="margin-top:.8rem"><summary>Bug report</summary><pre>{{ task.issue }}</pre></details>
 </div>
 
 {% if finished %}
+<div class="card">{% with steps = stepper(stage) %}{% include "_stepper.html" %}{% endwith %}</div>
 <div class="card">
   {% for kind, data in events %}{% include "_event.html" %}{% endfor %}
-  {% if bounty %}{% with kind="bounty", data={"state": bounty.state.value, "ref": bounty.settle_ref, "url": explorer(bounty.settle_ref or "")} %}{% include "_event.html" %}{% endwith %}{% endif %}
-  <p><a href="/runs/{{ run_id }}/patch.diff">Download patch</a></p>
+  {% if bounty and bounty.state.value in ('released', 'refunded') %}
+    {% with kind="bounty", data={"state": bounty.state.value, "ref": bounty.settle_ref, "url": explorer(bounty.settle_ref) if bounty.settle_ref else None, "run_id": run_id, "amount": bounty.amount} %}{% include "_event.html" %}{% endwith %}
+  {% endif %}
 </div>
 {% else %}
-<div class="card" hx-ext="sse" sse-connect="/runs/{{ run_id }}/events" sse-close="close">
-  <p>Status: <span sse-swap="status"><span class="pill">queued</span></span></p>
-  <div sse-swap="log" hx-swap="beforeend"></div>
-  <p class="muted">Live. <a href="/runs/{{ run_id }}">Reload</a> when done to download the patch.</p>
+<div hx-ext="sse" sse-connect="/runs/{{ run_id }}/events" sse-close="close">
+  <div class="card" sse-swap="stepper">{% with steps = stepper('queued') %}{% include "_stepper.html" %}{% endwith %}</div>
+  <div class="card"><div sse-swap="log" hx-swap="beforeend"></div>
+    <p class="muted small" style="margin:.6rem 0 0">Streaming live from the agent…</p></div>
 </div>
 {% endif %}
 {% endblock %}
