@@ -15,7 +15,7 @@ Requires Python 3.12 and [uv](https://docs.astral.sh/uv/). No accounts, keys or 
 
 ```sh
 uv sync
-cp .env.example .env           # defaults are all local
+cp -n .env.example .env        # only if you have no .env yet; defaults are all local
 uv run scout index             # Algorithm 1: build the repo index
 uv run scout nightly           # Algorithm 4: v1 -> v2 on the backtest
 uv run scout serve             # http://127.0.0.1:8000
