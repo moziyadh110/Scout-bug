@@ -7,8 +7,8 @@ class FsStore:
     """ObjectStore on the local filesystem. Keys are '/'-separated paths ending in .json."""
 
     def __init__(self, root: Path) -> None:
-        self.root = root
-        root.mkdir(parents=True, exist_ok=True)
+        self.root = root.resolve()
+        self.root.mkdir(parents=True, exist_ok=True)
 
     def _path(self, key: str) -> Path:
         p = (self.root / key).resolve()
