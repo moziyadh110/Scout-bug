@@ -43,6 +43,7 @@
       <tr><th>Proposed edit</th><th>Rationale</th><th>p@10</th></tr>
       {% for c in r.candidates %}<tr><td class="mono small">{{ c.edit | tojson }}</td><td class="small">{{ c.rationale }}</td><td>{{ c.precision_at_10 | pct }}</td></tr>{% endfor %}
       {% if r.composed %}<tr><td class="small"><b>composed best two</b></td><td></td><td><b>{{ r.composed.precision_at_10 | pct }}</b></td></tr>{% endif %}
+      {% if r.chosen %}<tr><td class="small"><b>chosen: {{ r.chosen.kind }}</b></td><td></td><td><b>{{ r.chosen.precision_at_10 | pct }}</b></td></tr>{% endif %}
     </table></div>{% endif %}
   </div>
   {% else %}<p class="muted" style="margin:0">No nightly runs yet.</p>{% endfor %}

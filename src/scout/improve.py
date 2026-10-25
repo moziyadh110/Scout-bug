@@ -295,23 +295,41 @@ def nightly(deps: Deps, at: datetime | None = None) -> dict[str, Any]:
         report["note"] = "the reasoner proposed no valid edits"
         return _save(deps, report)
 
-    best_two = sorted(scored, key=lambda x: -x[0])[:2]  # compose: the best edit wins clashes
-    merged = cur.playbook.model_dump()
-    for _, edit, _ in reversed(best_two):
-        merged = _merge(merged, edit)
-    composed = Playbook.model_validate(merged)
-    cev = ev.evaluate(composed)
-    report["composed"] = {
-        "edits": [e for _, e, _ in best_two],
-        "precision_at_10": cev.precision_at_10,
-    }
-    if cev.precision_at_10 >= base.precision_at_10 + s.min_gain - 1e-9:
-        v = commit(deps, composed, cur.version, cev, " ".join(w for _, _, w in best_two))
+    # Only edits that improved on their own may be composed.
+    improvers = sorted((x for x in scored if x[0] > base.precision_at_10), key=lambda x: -x[0])
+    if not improvers:
+        report["note"] = f"no edit beat the current {base.precision_at_10}"
+        return _save(deps, report)
+
+    best_score, best_edit, best_why = improvers[0]
+    options = [(best_score, _merge(cur.playbook.model_dump(), best_edit), best_why, "best single")]
+    if len(improvers) >= 2:  # compose the best two; the better edit wins field clashes
+        merged = cur.playbook.model_dump()
+        for _, edit, _ in reversed(improvers[:2]):
+            merged = _merge(merged, edit)
+        cev = ev.evaluate(Playbook.model_validate(merged))
+        report["composed"] = {
+            "edits": [e for _, e, _ in improvers[:2]],
+            "precision_at_10": cev.precision_at_10,
+        }
+        options.append(
+            (
+                cev.precision_at_10,
+                merged,
+                " ".join(w for _, _, w in improvers[:2]),
+                "composed best two",
+            )
+        )
+    # The higher score wins; on a tie the single edit wins (the smaller change).
+    chosen_score, chosen, why, label = max(options, key=lambda o: (o[0], o[3] == "best single"))
+    report["chosen"] = {"kind": label, "precision_at_10": chosen_score}
+    if chosen_score >= base.precision_at_10 + s.min_gain - 1e-9:
+        pb = Playbook.model_validate(chosen)
+        v = commit(deps, pb, cur.version, ev.evaluate(pb), why)
         report["accepted"] = v.version
     else:
         report["note"] = (
-            f"composed {cev.precision_at_10} does not beat {base.precision_at_10} "
-            f"by MIN_GAIN {s.min_gain}"
+            f"{label} {chosen_score} does not beat {base.precision_at_10} by MIN_GAIN {s.min_gain}"
         )
     return _save(deps, report)
 

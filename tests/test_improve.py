@@ -37,10 +37,11 @@ def test_two_nightly_runs_accept_then_reject(deps):
     assert sorted(c["precision_at_10"] for c in r1["candidates"]) == [0.6, 0.6, 0.7]
     pb, version = current_playbook(deps)
     assert version == 2 and pb.label_boosts == {"good first issue": 1.5}
-    assert pb.weights["feasibility"] == 2.0 and pb.weights["impact"] == 1.0  # best two only
+    assert pb.weights["feasibility"] == 1.0  # tied the baseline, so it was not an improver
+    assert r1["chosen"]["kind"] == "best single"
 
     r2 = nightly(deps)
-    assert r2["accepted"] is None and "MIN_GAIN" in r2["note"]
+    assert r2["accepted"] is None and "no edit beat" in r2["note"]
     vs = versions(deps)
     assert [v.eval.precision_at_10 for v in vs] == [0.6, 0.7]
     assert all(verify(deps, v.version)["ok"] for v in vs)
@@ -74,3 +75,28 @@ def test_evaluator_uses_the_backtest_repos_not_a_new_search(deps, monkeypatch):
     items = build_backtest(deps)
     monkeypatch.setattr(deps.github, "search_repos", lambda *a, **k: [])  # search moved on
     assert Evaluator(deps, items).evaluate(SEED).n_issues == 20
+
+
+class TwoImprovers:
+    """A reasoner that proposes two edits that each improve the fixture backtest."""
+
+    def complete(self, model: str, system: str, user: str):
+        from scout.ports import Completion
+
+        return Completion(
+            '[{"label_boosts": {"good first issue": 1.5}, "rationale": "gfi"},'
+            ' {"label_boosts": {"documentation": 1.5}, "rationale": "docs"}]',
+            1,
+        )
+
+    def list_models(self) -> list[str]:
+        return []
+
+
+def test_best_of_composed_and_single_prefers_single_on_a_tie(deps):
+    deps.llm = TwoImprovers()  # classification still runs through the mock batch adapter
+    r = nightly(deps)
+    assert [c["precision_at_10"] for c in r["candidates"]] == [0.7, 0.7]
+    assert r["composed"]["precision_at_10"] == 0.7
+    assert r["chosen"] == {"kind": "best single", "precision_at_10": 0.7} and r["accepted"] == 2
+    assert current_playbook(deps)[0].label_boosts == {"good first issue": 1.5}
