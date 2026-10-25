@@ -12,7 +12,6 @@ def now() -> datetime:
 Size = Literal["S", "M", "L"]
 Level = Literal["beginner", "intermediate", "advanced"]
 MAINTAINER_ROLES = {"OWNER", "MEMBER", "COLLABORATOR"}
-FIRST_TIMER_ROLES = {"FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR"}
 
 
 # --- GitHub data -----------------------------------------------------------------------
@@ -76,7 +75,8 @@ class PullRequest(BaseModel):
     number: int
     title: str = ""
     author: str
-    author_association: str = "NONE"
+    author_is_bot: bool = False
+    author_association: str = "NONE"  # today's relation to the repo, not the one at merge time
     merged: bool = False
     merged_by: str | None = None
     base_ref: str = "main"

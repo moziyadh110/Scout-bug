@@ -18,12 +18,12 @@ from scout.classify import classify_issues
 from scout.health import discover, health
 from scout.index import issue_gap
 from scout.models import (
-    FIRST_TIMER_ROLES,
     EvalResult,
     Issue,
     Playbook,
     PlaybookVersion,
     Profile,
+    PullRequest,
     now,
 )
 from scout.playbook import versions
@@ -74,13 +74,13 @@ def version_hash(pb: Playbook, ev: EvalResult) -> str:
 def build_backtest(deps: Deps, at: datetime | None = None) -> list[BacktestItem]:
     t = at or now()
     repos, _ = discover(deps.github, deps.settings, t)
-    items = []
+    items: list[BacktestItem] = []
     for r in repos:
+        pending: list[tuple[Issue, PullRequest | None]] = []
         for c in deps.github.closed_issues(
             r.full_name, t - timedelta(days=365), t - timedelta(days=182)
         ):
             pr = c.closing_pr
-            positive = bool(pr and pr.merged and pr.author_association in FIRST_TIMER_ROLES)
             solver = pr.author if pr else None
             snap = c.issue.model_copy(
                 update={
@@ -95,7 +95,19 @@ def build_backtest(deps: Deps, at: datetime | None = None) -> list[BacktestItem]
                     ],
                 }
             )
-            items.append(BacktestItem(issue=snap, positive=positive))
+            pending.append((snap, pr))
+        # Positive: the closing PR was its author's first merged PR in the repo (bots excluded).
+        asks = [
+            (pr.author, pr.merged_at)
+            for _, pr in pending
+            if pr and pr.merged and pr.merged_at and not pr.author_is_bot
+        ]
+        counts = iter(deps.github.prior_merged_counts(r.full_name, asks)) if asks else iter([])
+        for snap, pr in pending:
+            first = bool(
+                pr and pr.merged and pr.merged_at and not pr.author_is_bot and next(counts) == 0
+            )
+            items.append(BacktestItem(issue=snap, positive=first))
     items.sort(key=lambda i: i.issue.key)
     deps.store.put_json("backtest/set.json", [i.model_dump(mode="json") for i in items])
     return items

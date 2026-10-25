@@ -1,0 +1,6 @@
+{
+  "_comment": "Merged PRs each regular contributor had before the fixture window. Anyone not listed had none.",
+  "acme/tinycsv": {"maria": 40, "lee": 5},
+  "acme/dateparse": {"ivo": 30, "ana": 3},
+  "solo/quicktoml": {"solo": 25}
+}

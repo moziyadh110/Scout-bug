@@ -5,7 +5,13 @@ import tarfile
 
 import pytest
 
-from scout.adapters.cloud.github_api import GitHubAPI, issue_from_gql, pr_from_gql, stats_from_gql
+from scout.adapters.cloud.github_api import (
+    GitHubAPI,
+    issue_from_gql,
+    newcomer_candidates,
+    pr_from_gql,
+    stats_from_gql,
+)
 from scout.adapters.local.fixture_github import FixtureGitHub
 from scout.bounty import Bounties, declared_maintainers
 
@@ -51,13 +57,31 @@ def test_stats_from_graphql():
         },
         "pullRequests": {
             "nodes": [
-                {"authorAssociation": "FIRST_TIME_CONTRIBUTOR", "merged": True},
-                {"authorAssociation": "FIRST_TIMER", "merged": False},
-                {"authorAssociation": "MEMBER", "merged": True},
+                {
+                    "authorAssociation": "CONTRIBUTOR",
+                    "merged": True,
+                    "createdAt": "2026-10-01T00:00:00Z",
+                    "author": {"__typename": "User", "login": "new1"},
+                },
+                {
+                    "authorAssociation": "NONE",
+                    "merged": False,
+                    "createdAt": "2026-10-02T00:00:00Z",
+                    "author": {"__typename": "Bot", "login": "dependabot"},
+                },
+                {
+                    "authorAssociation": "MEMBER",
+                    "merged": True,
+                    "createdAt": "2026-10-03T00:00:00Z",
+                    "author": {"__typename": "User", "login": "m"},
+                },
             ]
         },
     }
-    s = stats_from_gql(r)
+    assert [p["author"]["login"] for p in newcomer_candidates(r)] == [
+        "new1"
+    ]  # no bots, no maintainers
+    s = stats_from_gql(r, 0.5)
     assert (s.stars, s.license, s.default_branch, s.commits_90d) == (900, "MIT", "main", 41)
     assert s.has_contributing and s.has_ci and s.topics == ["csv"]
     assert s.maintainer_response_hours == 15.0  # median of 10h and 20h; unanswered ignored
@@ -180,3 +204,17 @@ def test_checkout_extracts_safely(tmp_path, monkeypatch):
     monkeypatch.setattr(api, "_http", lambda url, data=None: b"x" * (2 * 1024 * 1024))
     with pytest.raises(ValueError, match="exceeds"):
         api.checkout("o/r", tmp_path / "src3")
+
+
+def test_fixture_prior_merged_counts_respect_the_moment(deps):
+    from datetime import timedelta
+
+    from scout.models import now
+
+    gh = deps.github
+    t = now()
+    # newbie's only merged PR (#21) was merged 1 hour ago
+    assert gh.prior_merged_counts(
+        "acme/tinycsv", [("newbie", t), ("newbie", t - timedelta(hours=2))]
+    ) == [1, 0]
+    assert gh.prior_merged_counts("acme/tinycsv", [("maria", t - timedelta(days=999))]) == [40]

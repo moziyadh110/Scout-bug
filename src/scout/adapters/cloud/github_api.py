@@ -17,7 +17,6 @@ from typing import Any
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from scout.models import (
-    FIRST_TIMER_ROLES,
     MAINTAINER_ROLES,
     ClosedIssue,
     Comment,
@@ -48,7 +47,7 @@ ISSUE_FIELDS = """
   assignees(first: 5) { nodes { login } }
   comments(first: 20) { nodes { author { login } authorAssociation body createdAt } }
   closedByPullRequestsReferences(first: 3, includeClosedPrs: true) {
-    nodes { number merged mergedAt authorAssociation author { login } }
+    nodes { number merged mergedAt authorAssociation author { __typename login } }
   }
 """
 PR_FIELDS = """
@@ -69,7 +68,8 @@ query($owner: String!, $name: String!, $since: GitTimestamp!) {
     ci: object(expression: "HEAD:.github/workflows") { id }
     issues(last: 30) { nodes { createdAt
       comments(first: 10) { nodes { authorAssociation createdAt } } } }
-    pullRequests(last: 50, states: [MERGED, CLOSED]) { nodes { authorAssociation merged } }
+    pullRequests(last: 40, states: [MERGED, CLOSED]) {
+      nodes { authorAssociation merged createdAt author { __typename login } } }
   }
 }
 """
@@ -87,7 +87,18 @@ def _ts(s: str) -> datetime:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
-def stats_from_gql(r: dict[str, Any]) -> RepoStats:
+def newcomer_candidates(r: dict[str, Any]) -> list[dict[str, Any]]:
+    """Closed PRs by humans who are not maintainers today; prior merges decide the rest."""
+    return [
+        p
+        for p in r["pullRequests"]["nodes"]
+        if p.get("author")
+        and p["author"]["__typename"] != "Bot"
+        and p["authorAssociation"] not in MAINTAINER_ROLES
+    ]
+
+
+def stats_from_gql(r: dict[str, Any], first_timer_rate: float | None = None) -> RepoStats:
     """Health inputs computed from one GraphQL response."""
     waits = []
     for i in r["issues"]["nodes"]:
@@ -96,7 +107,6 @@ def stats_from_gql(r: dict[str, Any]) -> RepoStats:
             waits.append(
                 (_ts(replies[0]["createdAt"]) - _ts(i["createdAt"])).total_seconds() / 3600
             )
-    firsts = [p for p in r["pullRequests"]["nodes"] if p["authorAssociation"] in FIRST_TIMER_ROLES]
     branch = r.get("defaultBranchRef") or {}
     history = ((branch.get("target") or {}).get("history") or {}).get("totalCount", 0)
     return RepoStats(
@@ -113,9 +123,7 @@ def stats_from_gql(r: dict[str, Any]) -> RepoStats:
         has_ci=bool(r.get("ci")),
         commits_90d=history,
         maintainer_response_hours=round(statistics.median(waits), 1) if waits else None,
-        first_timer_merge_rate=round(sum(p["merged"] for p in firsts) / len(firsts), 3)
-        if firsts
-        else None,
+        first_timer_merge_rate=first_timer_rate,
     )
 
 
@@ -233,7 +241,31 @@ class GitHubAPI:
         r = self._gql(REPO_QUERY, owner=owner, name=name, since=since.isoformat())["repository"]
         if r is None:
             raise KeyError(full_name)
-        return stats_from_gql(r)
+        cands = newcomer_candidates(r)
+        counts = self.prior_merged_counts(
+            full_name, [(p["author"]["login"], _ts(p["createdAt"])) for p in cands]
+        )
+        newcomers = [p for p, n in zip(cands, counts, strict=True) if n == 0]
+        rate = round(sum(p["merged"] for p in newcomers) / len(newcomers), 3) if newcomers else None
+        return stats_from_gql(r, rate)
+
+    def prior_merged_counts(self, full_name: str, queries: list[tuple[str, datetime]]) -> list[int]:
+        """Batched: 20 aliased GraphQL searches per request (REST search allows 30/min)."""
+        out: list[int] = []
+        for start in range(0, len(queries), 20):
+            chunk = queries[start : start + 20]
+            fields = []
+            for n, (login, at) in enumerate(chunk):
+                q = (
+                    f"repo:{full_name} is:pr is:merged author:{login} "
+                    f"merged:<{at.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+                )
+                fields.append(
+                    f"q{n}: search(query: {json.dumps(q)}, type: ISSUE, first: 1) {{ issueCount }}"
+                )
+            data = self._gql("query {" + " ".join(fields) + "}")
+            out += [int(data[f"q{n}"]["issueCount"]) for n in range(len(chunk))]
+        return out
 
     def open_issues(self, full_name: str) -> list[Issue]:
         owner, name = self._split(full_name)
@@ -338,10 +370,12 @@ class GitHubAPI:
             pr = None
             if merged:
                 m = merged[0]
+                author = m.get("author") or {}
                 pr = PullRequest(
                     repo=full_name,
                     number=m["number"],
-                    author=(m.get("author") or {}).get("login", "ghost"),
+                    author=author.get("login", "ghost"),
+                    author_is_bot=author.get("__typename") == "Bot",
                     author_association=m["authorAssociation"],
                     merged=True,
                     merged_at=_ts(m["mergedAt"]) if m.get("mergedAt") else None,

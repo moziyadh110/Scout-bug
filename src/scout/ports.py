@@ -76,6 +76,14 @@ class GitHub(Protocol):
     def closed_issues(
         self, full_name: str, closed_after: datetime, closed_before: datetime
     ) -> list[ClosedIssue]: ...
+    def prior_merged_counts(self, full_name: str, queries: list[tuple[str, datetime]]) -> list[int]:
+        """For each (login, moment): merged PRs by that login in the repo merged before it.
+
+        0 means the author was a first-time contributor at that moment. GitHub's
+        authorAssociation cannot tell us that: it reflects today's status.
+        """
+        ...
+
     def checkout(self, full_name: str, dest: Path) -> Path:
         """Put the default branch source at dest (a fresh directory) and return it."""
         ...

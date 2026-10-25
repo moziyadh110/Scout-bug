@@ -91,6 +91,23 @@ class FixtureGitHub:
         ]
         return [c for c in items if closed_after <= c.closed_at <= closed_before]
 
+    def prior_merged_counts(self, full_name: str, queries: list[tuple[str, datetime]]) -> list[int]:
+        history = self._load("merged_history").get(full_name, {})
+        merged = [PullRequest.model_validate(p) for p in self._load("pulls").get(full_name, [])]
+        merged += [
+            pr
+            for c in self._load("closed_issues").get(full_name, [])
+            if (pr := ClosedIssue.model_validate(c).closing_pr)
+        ]
+        return [
+            int(history.get(login, 0))
+            + sum(
+                p.merged and p.author == login and p.merged_at is not None and p.merged_at < at
+                for p in merged
+            )
+            for login, at in queries
+        ]
+
     def checkout(self, full_name: str, dest: Path) -> Path:
         src = self.root / "repos" / full_name.replace("/", "__")
         if not src.is_dir():
