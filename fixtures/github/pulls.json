@@ -1,0 +1,22 @@
+{
+  "acme/tinycsv": [
+    {
+      "repo": "acme/tinycsv", "number": 21, "title": "Add delimiter argument to read_rows",
+      "author": "newbie", "author_association": "FIRST_TIME_CONTRIBUTOR",
+      "merged": true, "merged_by": "maria", "base_ref": "main", "closes_issues": [12],
+      "ci_state": "success", "additions": 24, "deletions": 3, "changed_files": 2, "merged_at": "-1h"
+    },
+    {
+      "repo": "acme/tinycsv", "number": 22, "title": "quote newlines",
+      "author": "lee", "author_association": "CONTRIBUTOR",
+      "merged": true, "merged_by": "lee", "base_ref": "main", "closes_issues": [18],
+      "ci_state": "failure", "additions": 1, "deletions": 0, "changed_files": 1, "merged_at": "-2h"
+    },
+    {
+      "repo": "acme/tinycsv", "number": 23, "title": "Quote fields with newlines",
+      "author": "devjane", "author_association": "CONTRIBUTOR",
+      "merged": true, "merged_by": "maria", "base_ref": "dev", "closes_issues": [18],
+      "ci_state": "success", "additions": 30, "deletions": 2, "changed_files": 2, "merged_at": "-3h"
+    }
+  ]
+}

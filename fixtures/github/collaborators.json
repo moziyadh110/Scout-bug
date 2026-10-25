@@ -1,0 +1,4 @@
+{
+  "acme/tinycsv": ["maria"],
+  "acme/dateparse": ["ivo"]
+}

@@ -1,0 +1,9 @@
+{
+  "acme/tinycsv": {
+    ".scout.yml": "# Opt in to Scout bounties\nbounties: true\nmaintainers: [maria]\n",
+    "CONTRIBUTING.md": "Open a PR against main. Run pytest before pushing."
+  },
+  "acme/dateparse": {
+    "CONTRIBUTING.md": "Please open an issue before large changes."
+  }
+}

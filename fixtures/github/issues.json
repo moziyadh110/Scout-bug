@@ -1,0 +1,74 @@
+{
+  "acme/tinycsv": [
+    {
+      "repo": "acme/tinycsv", "number": 12, "author": "lee", "created_at": "-6d",
+      "title": "Support a custom delimiter in read_rows",
+      "body": "read_rows always splits on commas. Add a `delimiter` argument (default ',') so tab- and semicolon-separated files work.\n\nSteps: call read_rows(text, delimiter=';').\nExpected: rows split on semicolons.\nThe parser lives in tinycsv/__init__.py.",
+      "labels": ["good first issue", "enhancement"],
+      "comments": [{"author": "maria", "association": "OWNER", "created_at": "-5d", "body": "Happy to review a PR for this. Keep the default unchanged."}]
+    },
+    {
+      "repo": "acme/tinycsv", "number": 13, "author": "lee", "created_at": "-9d",
+      "title": "Add type hints to the public API",
+      "body": "Functions in tinycsv/__init__.py have no type hints.",
+      "labels": ["typing"], "assignees": ["bob"],
+      "comments": [{"author": "maria", "association": "OWNER", "created_at": "-8d", "body": "Assigned to bob."}]
+    },
+    {
+      "repo": "acme/tinycsv", "number": 14, "author": "kim", "created_at": "-12d",
+      "title": "Handle a UTF-8 BOM at the start of the file",
+      "body": "Files exported from Excel start with a BOM and the first header gets mangled.",
+      "labels": ["bug"], "linked_prs": [15],
+      "comments": [{"author": "maria", "association": "OWNER", "created_at": "-11d", "body": "Thanks, PR #15 is in review."}]
+    },
+    {
+      "repo": "acme/tinycsv", "number": 16, "author": "kim", "created_at": "-7d",
+      "title": "Document the quoting rules",
+      "body": "The README does not explain how quotes inside fields are handled.",
+      "labels": ["documentation"],
+      "comments": [
+        {"author": "maria", "association": "OWNER", "created_at": "-6d", "body": "Good idea."},
+        {"author": "sam", "association": "NONE", "created_at": "-5d", "body": "I'd like to work on this, can you assign me?"}
+      ]
+    },
+    {
+      "repo": "acme/tinycsv", "number": 17, "author": "zed", "created_at": "-3d",
+      "title": "Crash on an empty file",
+      "body": "read_rows('') raises IndexError.",
+      "labels": ["bug"], "comments": []
+    },
+    {
+      "repo": "acme/tinycsv", "number": 18, "author": "lee", "created_at": "-4d",
+      "title": "write_rows should quote fields that contain newlines",
+      "body": "write_rows([['a\\nb']]) produces a broken file. Fields with newlines must be quoted.\n\nExpected: \"a\\nb\" in quotes. See tinycsv/__init__.py write_rows.",
+      "labels": ["bug", "good first issue"],
+      "comments": [{"author": "maria", "association": "OWNER", "created_at": "-4d", "body": "Confirmed, a test case would be great too."}]
+    },
+    {
+      "repo": "acme/tinycsv", "number": 19, "author": "lee", "created_at": "-2d",
+      "title": "Release 1.2", "body": "Tracking PR.", "is_pull_request": true, "comments": []
+    }
+  ],
+  "acme/dateparse": [
+    {
+      "repo": "acme/dateparse", "number": 5, "author": "ana", "created_at": "-20d",
+      "title": "Parse ISO week dates like 2024-W05-3",
+      "body": "parse('2024-W05-3') should return the Wednesday of ISO week 5. The parser is in dateparse/__init__.py; add a regex branch for week dates and tests.",
+      "labels": ["enhancement"],
+      "comments": [{"author": "ivo", "association": "MEMBER", "created_at": "-18d", "body": "Yes please, ISO 8601 week dates are in scope."}]
+    },
+    {
+      "repo": "acme/dateparse", "number": 6, "author": "ana", "created_at": "-15d",
+      "title": "Refactor the timezone handling",
+      "body": "Timezone handling is spread across several modules and should be unified. This is a large change touching most of the package; needs a design first.",
+      "labels": ["refactor", "help wanted"],
+      "comments": [{"author": "ivo", "association": "MEMBER", "created_at": "-14d", "body": "Agreed, let's discuss a design in this issue first."}]
+    }
+  ],
+  "solo/quicktoml": [
+    {
+      "repo": "solo/quicktoml", "number": 2, "author": "x", "created_at": "-30d",
+      "title": "Support arrays of tables", "body": "", "labels": [], "comments": []
+    }
+  ]
+}

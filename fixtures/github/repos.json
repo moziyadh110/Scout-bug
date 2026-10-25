@@ -1,0 +1,42 @@
+[
+  {
+    "full_name": "acme/tinycsv",
+    "description": "A tiny, dependency-free CSV reader and writer",
+    "stars": 850, "pushed_at": "-2d", "license": "MIT", "default_branch": "main",
+    "topics": ["csv", "parsing"], "has_contributing": true, "has_ci": true,
+    "commits_90d": 42, "maintainer_response_hours": 10, "first_timer_merge_rate": 0.7
+  },
+  {
+    "full_name": "acme/dateparse",
+    "description": "Forgiving date and time parsing",
+    "stars": 3200, "pushed_at": "-10d", "license": "Apache-2.0", "default_branch": "main",
+    "topics": ["datetime", "parsing"], "has_contributing": true, "has_ci": false,
+    "commits_90d": 12, "maintainer_response_hours": 72, "first_timer_merge_rate": 0.4
+  },
+  {
+    "full_name": "solo/quicktoml",
+    "description": "Experimental TOML parser",
+    "stars": 260, "pushed_at": "-20d", "license": null, "default_branch": "main",
+    "topics": ["toml"], "has_contributing": false, "has_ci": false,
+    "commits_90d": 2, "maintainer_response_hours": null, "first_timer_merge_rate": null
+  },
+  {
+    "full_name": "oldco/legacyhttp",
+    "description": "HTTP helpers (unmaintained)",
+    "stars": 400, "pushed_at": "-400d", "license": "MIT", "default_branch": "master",
+    "has_contributing": true, "has_ci": true, "commits_90d": 0
+  },
+  {
+    "full_name": "megacorp/bigframe",
+    "description": "Dataframes at scale",
+    "stars": 45000, "pushed_at": "-1d", "license": "BSD-3-Clause",
+    "has_contributing": true, "has_ci": true, "commits_90d": 900,
+    "maintainer_response_hours": 4, "first_timer_merge_rate": 0.2
+  },
+  {
+    "full_name": "acme/archived-utils",
+    "description": "Old utilities",
+    "stars": 900, "pushed_at": "-5d", "archived": true, "license": "MIT",
+    "has_contributing": true, "has_ci": true, "commits_90d": 1
+  }
+]

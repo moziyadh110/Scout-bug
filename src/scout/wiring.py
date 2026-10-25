@@ -2,10 +2,11 @@
 
 from dataclasses import dataclass
 
+from scout.adapters.local.fixture_github import FixtureGitHub
 from scout.adapters.local.fs_store import FsStore
 from scout.adapters.local.sandbox import SubprocessSandbox
 from scout.config import Settings
-from scout.ports import LLMProvider, ObjectStore, Sandbox
+from scout.ports import GitHub, LLMProvider, ObjectStore, Sandbox
 
 
 @dataclass
@@ -14,6 +15,7 @@ class Deps:
     llm: LLMProvider
     sandbox: Sandbox
     store: ObjectStore
+    github: GitHub
 
     @property
     def mode(self) -> str:
@@ -37,8 +39,12 @@ def build(settings: Settings | None = None) -> Deps:
     if s.ledger_kind == "solana":
         raise RuntimeError("the Solana ledger adapter is not implemented yet (Phase 4)")
 
+    if s.github_kind == "api":
+        raise RuntimeError("the live GitHub adapter is not implemented yet (needs go-ahead)")
+    github = FixtureGitHub(s.fixtures_dir)
+
     sandbox = SubprocessSandbox(s.sandbox_timeout_seconds, _secrets(s))
-    return Deps(s, llm, sandbox, store)
+    return Deps(s, llm, sandbox, store, github)
 
 
 def _secrets(s: Settings) -> list[str]:

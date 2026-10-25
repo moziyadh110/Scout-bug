@@ -1,0 +1,13 @@
+{
+  "newbie": [
+    {"name": "csv-cleaner", "description": "Script to clean and parse messy CSV exports", "language": "Python", "topics": ["csv", "parsing"], "stars": 3, "pushed_at": "-15d"},
+    {"name": "notes", "description": "My markdown notes and documentation", "language": null, "topics": ["documentation"], "stars": 0, "pushed_at": "-40d"}
+  ],
+  "devjane": [
+    {"name": "typed-config", "description": "Typed configuration loader with mypy strict", "language": "Python", "topics": ["typing", "config"], "stars": 85, "pushed_at": "-5d"},
+    {"name": "pytest-snap", "description": "Snapshot testing plugin for pytest", "language": "Python", "topics": ["testing", "pytest"], "stars": 40, "pushed_at": "-12d"},
+    {"name": "when", "description": "Natural language date parsing CLI", "language": "Python", "topics": ["datetime", "parsing", "cli"], "stars": 22, "pushed_at": "-30d"},
+    {"name": "dotfiles", "description": "", "language": "Shell", "topics": [], "stars": 1, "pushed_at": "-2d"},
+    {"name": "requests", "description": "Fork of requests", "language": "Python", "topics": ["http"], "stars": 0, "fork": true, "pushed_at": "-300d"}
+  ]
+}
