@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Forge{% endblock %}
+{% block body %}
+<div class="card">
+  <h3 style="margin-top:0">Pass rate per playbook version</h3>
+  {% if versions %}
+  {% set w = 70 %}{% set h = 160 %}
+  <svg viewBox="0 0 {{ versions|length * w + 40 }} {{ h + 40 }}" style="width:100%; max-width:{{ versions|length * w + 40 }}px" role="img" aria-label="Pass rate by version">
+    <line x1="30" y1="{{ h }}" x2="{{ versions|length * w + 40 }}" y2="{{ h }}" stroke="currentColor" opacity=".3"/>
+    {% for v in versions %}{% set x = 35 + loop.index0 * w %}
+      {% set th = v.eval.train_pass_rate * (h - 10) %}{% set hh = v.eval.holdout_pass_rate * (h - 10) %}
+      <rect x="{{ x }}" y="{{ h - th }}" width="26" height="{{ th }}" fill="var(--accent)"><title>train {{ v.eval.train_pass_rate }}</title></rect>
+      <rect x="{{ x + 28 }}" y="{{ h - hh }}" width="26" height="{{ hh }}" fill="var(--ok)"><title>holdout {{ v.eval.holdout_pass_rate }}</title></rect>
+      <text x="{{ x + 13 }}" y="{{ h - th - 4 }}" font-size="10" text-anchor="middle" fill="currentColor">{{ (v.eval.train_pass_rate * 100) | round | int }}%</text>
+      <text x="{{ x + 41 }}" y="{{ h - hh - 4 }}" font-size="10" text-anchor="middle" fill="currentColor">{{ (v.eval.holdout_pass_rate * 100) | round | int }}%</text>
+      <text x="{{ x + 27 }}" y="{{ h + 16 }}" font-size="12" text-anchor="middle" fill="currentColor">v{{ v.version }}</text>
+    {% endfor %}
+  </svg>
+  <p class="muted"><span style="color:var(--accent)">■</span> train (8 tasks) &nbsp; <span class="ok">■</span> holdout (4 tasks, never shown to the reasoner)</p>
+  {% else %}<p class="muted">No versions yet. Run <code>uv run forge nightly</code>.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Version history</h3>
+  <table>
+    <tr><th>Ver</th><th>Mode</th><th>Train</th><th>Holdout</th><th>Tokens</th><th>Change</th><th>Hash</th><th>Ledger</th></tr>
+    {% for v in versions | reverse %}
+    <tr>
+      <td>v{{ v.version }}</td><td><span class="pill">{{ v.eval.mode }}</span></td>
+      <td>{{ v.eval.train_pass_rate }}</td><td>{{ v.eval.holdout_pass_rate }}</td><td>{{ v.eval.total_tokens }}</td>
+      <td>{{ v.rationale }}</td><td><code>{{ v.hash[:10] }}…</code></td>
+      <td id="verify-{{ v.version }}"><button hx-post="/verify/{{ v.version }}" hx-target="#verify-{{ v.version }}">Verify</button></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Nightly runs</h3>
+  {% for r in reports %}
+  <p><b>{{ r.at[:19] }}</b> · from v{{ r.from_version }} · <span class="pill">{{ r.mode }}</span> ·
+    {% if r.accepted %}<span class="ok">accepted v{{ r.accepted }}</span>{% else %}<span class="muted">{{ r.note }}</span>{% endif %}</p>
+  {% if r.candidates %}
+  <table>
+    <tr><th>Candidate edit</th><th>Rationale</th><th>Train</th><th></th></tr>
+    {% for c in r.candidates %}
+    <tr><td><code>{{ c.edit | tojson }}</code></td><td>{{ c.rationale }}</td><td>{{ c.train_pass_rate }}</td>
+      <td>{{ '✓ kept' if c.improved else '✗ dropped' }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% else %}<p class="muted">No nightly runs yet.</p>{% endfor %}
+</div>
+{% endblock %}

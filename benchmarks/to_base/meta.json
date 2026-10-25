@@ -1,0 +1,6 @@
+{
+  "name": "to_base",
+  "difficulty": "easy",
+  "split": "holdout",
+  "source": "QuixBugs (MIT)"
+}

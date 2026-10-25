@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Forge{% endblock %}</title>
+  <script src="/static/htmx.min.js"></script>
+  <script src="/static/sse.js"></script>
+  <style>
+    :root { --bg:#fafaf9; --fg:#1c1917; --muted:#78716c; --card:#fff; --line:#e7e5e4;
+            --ok:#15803d; --bad:#b91c1c; --accent:#4338ca; --code:#f5f5f4; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0c0a09; --fg:#e7e5e4; --muted:#a8a29e; --card:#1c1917; --line:#292524;
+              --ok:#4ade80; --bad:#f87171; --accent:#a5b4fc; --code:#171412; }
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+    header { display:flex; gap:1.5rem; align-items:center; padding:.8rem 1rem;
+             border-bottom:1px solid var(--line); }
+    header b { font-size:1.1rem; } header a { color:var(--fg); text-decoration:none; }
+    main { max-width:1000px; margin:0 auto; padding:1rem; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:10px;
+            padding:1rem; margin-bottom:1rem; }
+    .muted { color:var(--muted); } .ok { color:var(--ok); } .bad { color:var(--bad); }
+    .pill { display:inline-block; padding:0 .5rem; border-radius:99px; border:1px solid var(--line);
+            font-size:.85rem; }
+    pre { background:var(--code); padding:.6rem; border-radius:6px; overflow:auto;
+          max-height:22rem; font-size:.8rem; margin:.3rem 0; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th, td { text-align:left; padding:.35rem .4rem; border-bottom:1px solid var(--line); }
+    a { color:var(--accent); }
+    button { background:var(--accent); color:var(--bg); border:0; border-radius:6px;
+             padding:.45rem .9rem; cursor:pointer; font:inherit; }
+    input, select { font:inherit; padding:.35rem; border:1px solid var(--line); border-radius:6px;
+                    background:var(--card); color:var(--fg); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:.8rem; }
+    code { font-size:.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <b><a href="/">Forge</a></b>
+    <a href="/">Bounties</a>
+    <a href="/dashboard">Dashboard</a>
+    <span class="muted pill">{{ mode | default('') }}</span>
+  </header>
+  <main>{% block body %}{% endblock %}</main>
+</body>
+</html>

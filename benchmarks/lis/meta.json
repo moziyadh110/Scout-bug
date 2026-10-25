@@ -1,0 +1,6 @@
+{
+  "name": "lis",
+  "difficulty": "hard",
+  "split": "holdout",
+  "source": "QuixBugs (MIT)"
+}

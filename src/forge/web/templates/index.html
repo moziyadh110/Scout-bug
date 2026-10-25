@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="grid">
+  <div class="card"><div class="muted">Payer <code>{{ payer[:10] }}</code></div><b>{{ balances.payer | sol }} SOL</b></div>
+  <div class="card"><div class="muted">Escrow</div><b>{{ balances.escrow | sol }} SOL</b></div>
+  <div class="card"><div class="muted">Forge treasury</div><b>{{ balances.treasury | sol }} SOL</b></div>
+  <div class="card"><div class="muted">Playbook</div><b>{{ 'v' ~ version if version else 'seed (unversioned)' }}</b></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Submit a bug &amp; lock a bounty</h3>
+  <form method="post" action="/bounties" style="display:flex; gap:.6rem; flex-wrap:wrap; align-items:end">
+    <label>Bug<br>
+      <select name="task_id">
+        {% for t in tasks %}<option value="{{ t.name }}">{{ t.name }} ({{ t.difficulty }})</option>{% endfor %}
+      </select></label>
+    <label>Bounty (SOL, max {{ cap | sol }})<br>
+      <input name="amount_sol" type="number" step="0.001" min="0.001" max="{{ cap / 1000000000 }}" value="0.01"></label>
+    <button type="submit">Lock bounty &amp; start</button>
+  </form>
+  <details style="margin-top:.8rem"><summary class="muted">Issue texts</summary>
+    {% for t in tasks %}<p><b>{{ t.name }}</b></p><pre>{{ t.issue }}</pre>{% endfor %}
+  </details>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Bounties</h3>
+  <table>
+    <tr><th>Bug</th><th>Amount</th><th>State</th><th>Run</th><th>Settlement</th></tr>
+    {% for b in bounties %}
+    <tr>
+      <td>{{ b.task_id }}</td><td>{{ b.amount | sol }} SOL</td>
+      <td><span class="pill {{ 'ok' if b.state == 'released' else 'bad' if b.state == 'refunded' else '' }}">{{ b.state.value }}</span></td>
+      <td>{% if b.run_id %}<a href="/runs/{{ b.run_id }}">{{ b.run_id }}</a>{% endif %}</td>
+      <td>{% if b.settle_ref %}{% set u = explorer(b.settle_ref) %}{% if u %}<a href="{{ u }}" target="_blank">{{ b.settle_ref[:12] }}…</a>{% else %}<code>{{ b.settle_ref }}</code>{% endif %}{% endif %}</td>
+    </tr>
+    {% else %}<tr><td colspan="5" class="muted">No bounties yet.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

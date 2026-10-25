@@ -1,0 +1,11 @@
+{% if kind == "status" %}<span class="pill">{{ data.status }}{% if data.attempt %} · attempt {{ data.attempt }}{% endif %}</span>
+{% elif kind == "memory" %}<div><b>Retrieved {{ data.examples | length }} similar past fix(es)</b><pre>{{ data.examples | join("\n\n---\n\n") }}</pre></div>
+{% elif kind == "plan" %}<div><b>Plan</b><pre>{{ data.plan }}</pre></div>
+{% elif kind == "patch" %}<div><b>Patch · attempt {{ data.attempt }}</b><pre>{{ data.diff }}</pre></div>
+{% elif kind == "tests" %}<div><b class="{{ 'ok' if data.passed else 'bad' }}">Tests {{ 'passed ✓' if data.passed else 'failed ✗' }} · attempt {{ data.attempt }}</b><pre>{{ data.output }}</pre></div>
+{% elif kind == "judge" %}<div><b class="{{ 'ok' if data.verdict.upper().startswith('PASS') else 'bad' }}">Judge: {{ data.verdict }}</b></div>
+{% elif kind == "done" %}<div><b class="{{ 'ok' if data.status == 'passed' else 'bad' }}">Run {{ data.status }}</b></div>
+{% elif kind == "bounty" %}<div><b class="{{ 'ok' if data.state == 'released' else 'bad' }}">Bounty {{ data.state }}</b>
+  {% if data.url %}· <a href="{{ data.url }}" target="_blank">view on explorer</a>{% elif data.ref %}· <code>{{ data.ref }}</code>{% endif %}</div>
+{% elif kind == "error" %}<div class="bad"><b>Error:</b> {{ data.message }}</div>
+{% endif %}

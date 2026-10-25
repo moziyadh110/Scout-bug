@@ -1,0 +1,6 @@
+{
+  "name": "is_valid_parenthesization",
+  "difficulty": "easy",
+  "split": "train",
+  "source": "QuixBugs (MIT)"
+}

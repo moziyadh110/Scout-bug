@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Run {{ run_id }} · Forge{% endblock %}
+{% block body %}
+<div class="card">
+  <h3 style="margin-top:0">{{ task.name }} <span class="muted">· run {{ run_id }}</span></h3>
+  {% if bounty %}<p>Bounty: <b>{{ bounty.amount | sol }} SOL</b> ·
+    state <span class="pill">{{ bounty.state.value }}</span>
+    {% if bounty.escrow_ref %}{% set u = explorer(bounty.escrow_ref) %} · lock tx
+      {% if u %}<a href="{{ u }}" target="_blank">{{ bounty.escrow_ref[:12] }}…</a>{% else %}<code>{{ bounty.escrow_ref }}</code>{% endif %}{% endif %}
+  </p>{% endif %}
+  <details><summary class="muted">Issue</summary><pre>{{ task.issue }}</pre></details>
+</div>
+
+{% if finished %}
+<div class="card">
+  {% for kind, data in events %}{% include "_event.html" %}{% endfor %}
+  {% if bounty %}{% with kind="bounty", data={"state": bounty.state.value, "ref": bounty.settle_ref, "url": explorer(bounty.settle_ref or "")} %}{% include "_event.html" %}{% endwith %}{% endif %}
+  <p><a href="/runs/{{ run_id }}/patch.diff">Download patch</a></p>
+</div>
+{% else %}
+<div class="card" hx-ext="sse" sse-connect="/runs/{{ run_id }}/events" sse-close="close">
+  <p>Status: <span sse-swap="status"><span class="pill">queued</span></span></p>
+  <div sse-swap="log" hx-swap="beforeend"></div>
+  <p class="muted">Live. <a href="/runs/{{ run_id }}">Reload</a> when done to download the patch.</p>
+</div>
+{% endif %}
+{% endblock %}
