@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Bounties · Scout{% endblock %}
+{% macro pill(s) -%}
+<span class="pill {{ 'ok' if s == 'released' else 'bad' if s in ('refunded', 'disputed', 'expired') else 'warn' }}">{{ s }}</span>
+{%- endmacro %}
+{% block body %}
+<h1>Bounties</h1>
+<p class="lede">Fund an issue in a repo whose maintainers opted in with <code>.scout.yml</code>. The bounty is
+  released only when a merged PR passes five deterministic checks and the dispute window passes. No model is
+  involved in paying out.</p>
+<div class="alert" style="background:var(--warn-soft); color:var(--warn)">Interim design: escrow is a
+  backend-held wallet, not a non-custodial on-chain program. Amounts are test USDC.</div>
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+<div class="grid g3">
+  <div class="card"><h2>Fund an issue</h2>
+    {% if opted %}
+    <form method="post" action="/bounties">
+      <label>Repo (opted in)<select name="repo">{% for r in opted %}<option>{{ r }}</option>{% endfor %}</select></label>
+      <label>Issue number<input name="issue" type="number" min="1" required value="12"></label>
+      <label>Amount <span class="muted">test USDC, max {{ cap | usdc }}</span><input name="usdc" type="number" step="0.01" min="0.01" value="10"></label>
+      <button>Lock in escrow</button>
+    </form>
+    {% else %}<p class="muted">No indexed repo has opted in. Build the index first.</p>{% endif %}
+  </div>
+  <div class="card"><h2>Wallets</h2>
+    <p class="small">Funder <span class="mono">{{ funder }}</span>: <b>{{ balances.funder | usdc }}</b> test USDC</p>
+    <p class="small">Escrow: <b>{{ balances.escrow | usdc }}</b> test USDC</p>
+    <p class="muted small">Dispute window: {{ window }} s</p>
+    <form method="post" action="/bounties/tick"><button class="ghost">Poll merges &amp; settle due</button></form>
+  </div>
+  {% if local %}
+  <div class="card"><h2>Demo: a PR gets merged</h2>
+    <p class="muted small">Sends a signed GitHub webhook through the real handler. Scout then re-fetches the PR
+      and runs the checks.</p>
+    <form method="post" action="/demo/simulate-merge">
+      <label>Repo<input name="repo" value="acme/tinycsv"></label>
+      <label>PR number <span class="muted">21 passes · 22 and 23 fail checks</span><input name="pr" type="number" value="21"></label>
+      <button class="ghost">Simulate merge webhook</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card"><h2>All bounties</h2><div class="scroll"><table>
+  <tr><th>Issue</th><th>Amount</th><th>State</th><th>Checks</th><th>Window / note</th><th></th></tr>
+  {% for b in bounties %}
+  <tr>
+    <td><b>{{ b.repo }}#{{ b.issue_number }}</b>{% if b.pr_number %}<div class="muted small">PR #{{ b.pr_number }} by {{ b.contributor }}</div>{% endif %}</td>
+    <td>{{ b.amount | usdc }}</td><td>{{ pill(b.state.value) }}</td>
+    <td class="small">{% for c in b.checks %}<div class="{{ 'ok' if c.ok else 'bad' }}" title="{{ c.detail }}">{{ '✓' if c.ok else '✕' }} {{ c.name }}</div>{% else %}<span class="muted">—</span>{% endfor %}</td>
+    <td class="small">{% if b.state.value == 'verified' and b.dispute_until %}
+        {% set left = (b.dispute_until - now).total_seconds() | int %}
+        {% if left > 0 %}dispute window: {{ left }} s left{% else %}window over — release on next tick{% endif %}<br>{% endif %}
+      <span class="muted">{{ b.note }}</span>
+      {% if b.credential_ref %}<div class="muted mono">credential {{ b.credential_ref }}</div>{% endif %}</td>
+    <td>{% if b.state.value == 'verified' %}
+      <form method="post" action="/bounties/{{ b.id }}/dispute"><input type="hidden" name="reason" value="disputed by funder">
+        <button class="danger">Dispute</button></form>{% endif %}</td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="muted">No bounties yet.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Self-improvement · Scout{% endblock %}
+{% block body %}
+<div class="row" style="justify-content:space-between">
+  <div><h1>Self-improvement</h1>
+    <p class="lede">Nightly backtest: issues closed 6–12 months ago, as they looked while open. A playbook scores
+      by how many of its top 10 were solved by first-time contributors. A reasoner proposes edits, each is probed,
+      the best two are composed, and the result is kept only if it beats the current playbook by MIN_GAIN.</p></div>
+  <form method="post" action="/nightly"><button>Run nightly now</button></form>
+</div>
+{% if versions %}
+{% set w = 90 %}{% set h = 160 %}{% set left = 40 %}{% set width = left + versions | length * w + 10 %}
+<div class="card"><h2>precision@10 per version</h2>
+  <svg viewBox="0 0 {{ width }} {{ h + 30 }}" style="width:100%; max-width:{{ [width, 900] | min }}px; height:auto" role="img" aria-label="precision at 10 per version">
+    {% for pct in [0, 50, 100] %}{% set y = h - pct / 100 * (h - 20) %}
+      <line x1="{{ left }}" y1="{{ y }}" x2="{{ width }}" y2="{{ y }}" stroke="currentColor" opacity=".12"/>
+      <text x="{{ left - 6 }}" y="{{ y + 4 }}" font-size="10" text-anchor="end" fill="currentColor" opacity=".55">{{ pct }}%</text>{% endfor %}
+    {% for v in versions %}{% set x = left + 20 + loop.index0 * w %}{% set bh = v.eval.precision_at_10 * (h - 20) %}
+      <rect x="{{ x }}" y="{{ h - bh }}" width="44" height="{{ bh }}" rx="4" fill="var(--accent)"><title>v{{ v.version }}: {{ v.eval.precision_at_10 }}</title></rect>
+      <text x="{{ x + 22 }}" y="{{ h - bh - 5 }}" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">{{ v.eval.precision_at_10 | pct }}</text>
+      <text x="{{ x + 22 }}" y="{{ h + 18 }}" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">v{{ v.version }}</text>{% endfor %}
+  </svg>
+  <p class="muted small" style="margin:0">{{ versions[-1].eval.n_issues }} backtest issues, {{ versions[-1].eval.n_positive }} solved by first-timers ·
+    <span class="pill {{ 'warn' if versions[-1].eval.mode == 'mock' else 'accent' }}">{{ versions[-1].eval.mode }}</span></p>
+</div>
+<div class="card"><h2>Versions <span class="muted small" style="font-weight:400">· each hash is recorded on the ledger</span></h2><div class="scroll"><table>
+  <tr><th>Version</th><th>p@10</th><th>What changed</th><th>Hash</th><th>Proof</th></tr>
+  {% for v in versions | reverse %}
+  <tr><td><b>v{{ v.version }}</b></td><td>{{ v.eval.precision_at_10 | pct }}</td>
+    <td class="small">{{ v.rationale }}<details><summary>config</summary><pre>{{ v.playbook.model_dump(exclude={'classify_prompt': True, 'plan_prompt': True}) | tojson(indent=2) }}</pre></details></td>
+    <td class="mono small">{{ v.hash[:12] }}…</td>
+    <td id="verify-{{ v.version }}"><button class="ghost" hx-post="/verify/{{ v.version }}" hx-target="#verify-{{ v.version }}">Verify</button></td></tr>
+  {% endfor %}
+</table></div></div>
+{% else %}<div class="card"><p class="muted" style="margin:0">No versions yet. Run the nightly job: it scores the seed playbook as v1, then tries to beat it.</p></div>{% endif %}
+
+<div class="card"><h2>Nightly runs</h2>
+  {% for r in reports %}
+  <div style="padding:.5rem 0; border-bottom:1px dashed var(--line)">
+    <div class="row"><b>{{ r.at[:16] | replace('T', ' ') }}</b><span class="muted small">from v{{ r.from_version }}, baseline {{ r.baseline | pct }}</span>
+      {% if r.accepted %}<span class="pill ok">accepted v{{ r.accepted }}</span>{% else %}<span class="pill">no change</span><span class="muted small">{{ r.note }}</span>{% endif %}</div>
+    {% if r.candidates %}<div class="scroll"><table style="margin-top:.3rem">
+      <tr><th>Proposed edit</th><th>Rationale</th><th>p@10</th></tr>
+      {% for c in r.candidates %}<tr><td class="mono small">{{ c.edit | tojson }}</td><td class="small">{{ c.rationale }}</td><td>{{ c.precision_at_10 | pct }}</td></tr>{% endfor %}
+      {% if r.composed %}<tr><td class="small"><b>composed best two</b></td><td></td><td><b>{{ r.composed.precision_at_10 | pct }}</b></td></tr>{% endif %}
+    </table></div>{% endif %}
+  </div>
+  {% else %}<p class="muted" style="margin:0">No nightly runs yet.</p>{% endfor %}
+</div>
+{% endblock %}

@@ -292,7 +292,7 @@ def nightly(deps: Deps, at: datetime | None = None) -> dict[str, Any]:
         "precision_at_10": cev.precision_at_10,
     }
     if cev.precision_at_10 >= base.precision_at_10 + s.min_gain - 1e-9:
-        v = commit(deps, composed, cur.version, cev, "; ".join(w for _, _, w in best_two))
+        v = commit(deps, composed, cur.version, cev, " ".join(w for _, _, w in best_two))
         report["accepted"] = v.version
     else:
         report["note"] = (

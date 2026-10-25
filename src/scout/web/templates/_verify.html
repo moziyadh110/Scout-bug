@@ -1,0 +1,5 @@
+{% if r.ok %}<span class="pill ok">✓ matches ledger</span>{% else %}<span class="pill bad">✕ mismatch</span>{% endif %}
+<details><summary>details</summary><pre>stored     {{ r.stored_hash }}
+recomputed {{ r.recomputed_hash }}
+on ledger  {{ r.ledger_memo }}{% if r.error %}
+error      {{ r.error }}{% endif %}</pre></details>

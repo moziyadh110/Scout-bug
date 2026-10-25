@@ -1,0 +1,35 @@
+<div class="card">
+  <div class="row" style="justify-content:space-between">
+    <h2 style="margin:0">{{ r.login }} <span class="pill">{{ r.profile.level }}</span></h2>
+    <span class="muted small mono">trace {{ r.id }} · {{ r.mode }}</span>
+  </div>
+  <p class="small" style="margin:.5rem 0 0">Skills:
+    {% for sk, v in r.profile.skills.items() %}<span class="pill accent">{{ sk }} {{ v | pct }}</span> {% else %}<span class="muted">none found in public repos</span>{% endfor %}</p>
+  {% if r.profile.evidence %}<p class="muted small" style="margin:.3rem 0 0">From: {{ r.profile.evidence | join(' · ') }}</p>{% endif %}
+</div>
+{% for m in r.matches %}
+{% set v = m.verification %}
+<div class="card">
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <div class="muted small mono">{{ m.gap.repo }}{% if m.gap.issue_number %} #{{ m.gap.issue_number }}{% endif %}</div>
+      <h2 style="margin:.1rem 0">{{ m.gap.title }}</h2>
+      <div class="row small">
+        <span class="pill">{{ 'issue' if m.gap.kind == 'issue' else 'found by ' ~ m.gap.source }}</span>
+        <span class="pill">size {{ m.gap.size }}</span><span class="pill">clarity {{ m.gap.clarity }}/5</span>
+        {% for l in m.gap.labels %}<span class="pill">{{ l }}</span>{% endfor %}
+        {% if m.funded_units %}<span class="pill ok">bounty {{ m.funded_units | usdc }} test USDC</span>{% endif %}
+      </div>
+    </div>
+    <div style="text-align:right"><div class="stat"><div class="k">score</div><div class="v">{{ '%.3f' | format(m.score) }}</div></div>
+      <div class="muted small">{% for k, x in m.parts.items() %}{{ k }} {{ '%.2f' | format(x) }}{{ ' · ' if not loop.last }}{% endfor %}</div></div>
+  </div>
+  {% if v %}<div class="row small" style="margin-top:.6rem">
+    {% for name, ok in [('still open', v.still_open), ('unclaimed', v.unclaimed), ('builds', v.builds), ('tests run', v.tests_ran)] %}
+      <span class="pill {{ 'ok' if ok else 'bad' }}">{{ '✓' if ok else '✕' }} {{ name }}</span>{% endfor %}
+    <span class="muted">{{ v.detail }}</span></div>{% endif %}
+  {% if m.plan %}<pre>{{ m.plan }}</pre>{% elif v and not v.ok %}<p class="bad small">Not recommended right now: verification failed.</p>{% endif %}
+</div>
+{% else %}
+<div class="card"><p class="muted" style="margin:0">No matching gaps for this profile. Try adding skills.</p></div>
+{% endfor %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Repo index · Scout{% endblock %}
+{% block body %}
+<div class="row" style="justify-content:space-between">
+  <div><h1>Repo index</h1>
+    <p class="lede">The nightly job: discover repos, score health without an LLM, drop issues nobody can pick up,
+      classify the rest in one batch, and run tools in the sandbox to find implicit gaps.</p></div>
+  <form method="post" action="/index"><button>Rebuild now</button></form>
+</div>
+{% if not snap %}<div class="card"><p class="muted" style="margin:0">No index yet.</p></div>{% else %}
+<p class="muted small">Built {{ snap.built_at.strftime('%Y-%m-%d %H:%M') }} UTC · <span class="pill {{ 'warn' if snap.mode == 'mock' else 'accent' }}">{{ snap.mode }}</span></p>
+
+<div class="card"><h2>Healthy repos</h2><div class="scroll"><table>
+  <tr><th>Repo</th><th>Health</th>{% for k in snap.health.values() | first | attr('parts') %}<th>{{ k }}</th>{% endfor %}<th>Gaps</th></tr>
+  {% for r in snap.repos %}{% set h = snap.health[r.full_name] %}
+  <tr><td><b>{{ r.full_name }}</b><div class="muted small">{{ r.stars }} ★ · {{ r.license or 'no license' }}</div></td>
+    <td><b>{{ '%.2f' | format(h.score) }}</b></td>
+    {% for v in h.parts.values() %}<td>{{ '%.2f' | format(v) }}</td>{% endfor %}
+    <td>{{ snap.gaps | selectattr('repo', 'eq', r.full_name) | list | length }}</td></tr>
+  {% endfor %}
+</table></div></div>
+
+<div class="card"><h2>Gaps <span class="muted small" style="font-weight:400">· {{ snap.gaps | length }}</span></h2><div class="scroll"><table>
+  <tr><th>Gap</th><th>Kind</th><th>Size</th><th>Clarity</th><th>Skills</th></tr>
+  {% for g in snap.gaps %}
+  <tr><td><span class="mono small muted">{{ g.id }}</span><div>{{ g.title }}</div></td>
+    <td><span class="pill">{{ 'issue' if g.kind == 'issue' else g.source }}</span></td>
+    <td>{{ g.size }}</td><td>{{ g.clarity }}/5</td><td class="small">{{ g.skills | join(', ') or '—' }}</td></tr>
+  {% endfor %}
+</table></div></div>
+
+<div class="grid g3">
+  <div class="card"><h2>Dropped issues</h2>
+    {% for k, why in snap.dropped_issues.items() %}<div class="small"><span class="mono">{{ k }}</span> <span class="muted">— {{ why }}</span></div>{% else %}<p class="muted">None.</p>{% endfor %}</div>
+  <div class="card"><h2>Skipped repos</h2>
+    {% for k, why in snap.skipped_repos.items() %}<div class="small"><span class="mono">{{ k }}</span> <span class="muted">— {{ why }}</span></div>{% else %}<p class="muted">None.</p>{% endfor %}</div>
+  <div class="card"><h2>Sandbox tools</h2>
+    {% for k, st in snap.tool_status.items() %}<div class="small"><b>{{ k }}</b> <span class="{{ 'ok' if st == 'ok' else 'muted' }}">{{ st }}</span></div>{% endfor %}</div>
+</div>
+{% endif %}
+{% endblock %}

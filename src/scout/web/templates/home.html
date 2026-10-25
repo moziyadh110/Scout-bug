@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+<span class="pill accent">Open source contributions, matched and verified</span>
+<h1>Find a contribution you can actually land.</h1>
+<p class="lede">Scout reads your public repos, matches you to issues and gaps in healthy Python projects,
+  checks in a sandbox that each one is still open, unclaimed and buildable, and writes a plan to get you started.</p>
+
+{% if not snap %}
+<div class="card"><h2>No index yet</h2>
+  <p class="muted">Build the repo index first (the nightly job). It discovers repos, scores their health,
+    filters issues and runs tools in the sandbox.</p>
+  <form method="post" action="/index" hx-boost="false"><button>Build the index</button></form></div>
+{% else %}
+<div class="card">
+  <form hx-post="/match" hx-target="#results" hx-indicator="#busy">
+    <div class="row" style="align-items:end">
+      <label style="flex:1; min-width:220px">GitHub login
+        {% if users %}<select name="login">{% for u in users %}<option>{{ u }}</option>{% endfor %}</select>
+        {% else %}<input name="login" required placeholder="octocat">{% endif %}</label>
+      <div><button type="submit">Find matches →</button></div>
+    </div>
+    <details><summary>Add skills your repos don't show</summary>
+      <div class="checks" style="margin-top:.5rem">{% for sk in skills %}<label><input type="checkbox" name="skills" value="{{ sk }}">{{ sk }}</label>{% endfor %}</div>
+    </details>
+    <p class="muted small" style="margin:.6rem 0 0">Index built {{ snap.built_at.strftime('%Y-%m-%d %H:%M') }} UTC ·
+      {{ snap.repos | length }} repos · {{ snap.gaps | length }} gaps · playbook {{ 'v' ~ version if version else 'seed' }}
+      <span id="busy" class="htmx-indicator"> · verifying top matches in the sandbox…</span></p>
+  </form>
+</div>
+<div id="results"></div>
+{% endif %}
+{% endblock %}

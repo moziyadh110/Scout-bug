@@ -3,21 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Forge{% endblock %}</title>
+  <title>{% block title %}Scout{% endblock %}</title>
   <script src="/static/htmx.min.js"></script>
-  <script src="/static/sse.js"></script>
   <style>
     :root {
       --bg:#f6f7f9; --fg:#0f172a; --muted:#64748b; --card:#ffffff; --line:#e2e8f0; --soft:#f1f5f9;
-      --accent:#4f46e5; --accent-fg:#ffffff; --accent-soft:#eef2ff;
+      --accent:#0f766e; --accent-fg:#ffffff; --accent-soft:#ccfbf1;
       --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2;
-      --warn:#b45309; --warn-soft:#fef3c7; --code:#0b1020; --code-fg:#e2e8f0;
-      --add:#16a34a33; --del:#dc262633; --radius:14px;
+      --warn:#b45309; --warn-soft:#fef3c7; --code:#0b1020; --code-fg:#e2e8f0; --radius:14px;
     }
     @media (prefers-color-scheme: dark) {
       :root {
         --bg:#0b0f19; --fg:#e2e8f0; --muted:#94a3b8; --card:#111827; --line:#1f2937; --soft:#0f172a;
-        --accent:#818cf8; --accent-fg:#0b0f19; --accent-soft:#1e1b4b;
+        --accent:#2dd4bf; --accent-fg:#042f2e; --accent-soft:#134e4a;
         --ok:#4ade80; --ok-soft:#052e16; --bad:#f87171; --bad-soft:#450a0a;
         --warn:#fbbf24; --warn-soft:#451a03; --code:#050811; --code-fg:#e2e8f0;
       }
@@ -28,82 +26,72 @@
     a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
     code, pre, .mono { font-family:ui-monospace, "Cascadia Code", Consolas, monospace; }
     code { font-size:.85em; background:var(--soft); padding:.05em .35em; border-radius:5px; }
-
-    header.top { position:sticky; top:0; z-index:5; backdrop-filter:blur(8px);
-                 background:color-mix(in srgb, var(--bg) 85%, transparent); border-bottom:1px solid var(--line); }
-    header.top .in { max-width:1100px; margin:0 auto; padding:.7rem 1rem; display:flex; gap:1.4rem; align-items:center; flex-wrap:wrap; }
-    .brand { display:flex; align-items:center; gap:.5rem; font-weight:800; font-size:1.1rem; color:var(--fg); }
+    header.top { position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line); }
+    header.top .in { max-width:1100px; margin:0 auto; padding:.7rem 1rem; display:flex; gap:1.2rem;
+                     align-items:center; flex-wrap:wrap; }
+    .brand { font-weight:800; font-size:1.1rem; color:var(--fg); display:flex; gap:.45rem; align-items:center; }
     .brand .mark { width:26px; height:26px; border-radius:8px; display:grid; place-items:center;
-                   background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; font-size:.9rem; }
+                   background:linear-gradient(135deg, #14b8a6, #0ea5e9); color:#fff; font-size:.85rem; }
+    nav { display:flex; gap:1rem; flex-wrap:wrap; }
     nav a { color:var(--muted); font-weight:500; } nav a.on, nav a:hover { color:var(--fg); text-decoration:none; }
-    nav { display:flex; gap:1.1rem; }
     .spacer { flex:1; }
-
     main { max-width:1100px; margin:0 auto; padding:1.4rem 1rem 3rem; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:1.2rem; margin-bottom:1rem; }
-    .card h2 { margin:0 0 .8rem; font-size:1.05rem; }
+    h1 { font-size:clamp(1.4rem, 3vw, 2rem); letter-spacing:-.03em; margin:.2rem 0 .4rem; }
+    .lede { color:var(--muted); margin:0 0 1.2rem; max-width:68ch; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+            padding:1.1rem 1.2rem; margin-bottom:1rem; }
+    .card h2 { margin:0 0 .7rem; font-size:1.05rem; }
     .muted { color:var(--muted); } .small { font-size:.85rem; }
-    .row { display:flex; gap:.8rem; align-items:center; flex-wrap:wrap; }
-    .grid { display:grid; gap:1rem; }
-    .g4 { grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); }
-    .g2 { grid-template-columns:minmax(0, 1.6fr) minmax(0, 1fr); }
-    @media (max-width: 820px) { .g2 { grid-template-columns:1fr; } }
-
-    .pill { display:inline-flex; align-items:center; gap:.3rem; padding:.1rem .6rem; border-radius:99px;
-            font-size:.78rem; font-weight:600; background:var(--soft); color:var(--muted); border:1px solid var(--line); white-space:nowrap; }
+    .row { display:flex; gap:.7rem; align-items:center; flex-wrap:wrap; }
+    .grid { display:grid; gap:1rem; } .g3 { grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); }
+    .pill { display:inline-flex; align-items:center; padding:.08rem .55rem; border-radius:99px; font-size:.76rem;
+            font-weight:600; background:var(--soft); color:var(--muted); border:1px solid var(--line); white-space:nowrap; }
     .pill.ok { background:var(--ok-soft); color:var(--ok); border-color:transparent; }
     .pill.bad { background:var(--bad-soft); color:var(--bad); border-color:transparent; }
     .pill.warn { background:var(--warn-soft); color:var(--warn); border-color:transparent; }
     .pill.accent { background:var(--accent-soft); color:var(--accent); border-color:transparent; }
     .ok { color:var(--ok); } .bad { color:var(--bad); }
-
-    .stat .k { color:var(--muted); font-size:.82rem; } .stat .v { font-size:1.6rem; font-weight:800; letter-spacing:-.02em; }
-    .stat .s { color:var(--muted); font-size:.8rem; }
-
-    pre { background:var(--code); color:var(--code-fg); padding:.8rem 1rem; border-radius:10px; overflow:auto;
-          max-height:26rem; font-size:.8rem; line-height:1.5; margin:.4rem 0 0; }
-    pre .add { background:var(--add); display:inline-block; width:100%; }
-    pre .del { background:var(--del); display:inline-block; width:100%; }
-    pre .hunk { color:#93c5fd; }
-    pre.wrap { white-space:pre-wrap; word-break:break-word; }
-
+    .stat .k { color:var(--muted); font-size:.82rem; } .stat .v { font-size:1.5rem; font-weight:800; }
+    pre { background:var(--code); color:var(--code-fg); padding:.7rem .9rem; border-radius:10px; overflow:auto;
+          max-height:22rem; font-size:.8rem; margin:.4rem 0 0; white-space:pre-wrap; word-break:break-word; }
     table { width:100%; border-collapse:collapse; font-size:.9rem; }
-    th { text-align:left; color:var(--muted); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; }
-    th, td { padding:.55rem .5rem; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { text-align:left; color:var(--muted); font-weight:600; font-size:.76rem; text-transform:uppercase; letter-spacing:.04em; }
+    th, td { padding:.5rem .45rem; border-bottom:1px solid var(--line); vertical-align:top; }
     tr:last-child td { border-bottom:0; }
     .scroll { overflow-x:auto; }
-
-    button, .btn { background:var(--accent); color:var(--accent-fg); border:0; border-radius:10px; padding:.6rem 1.1rem;
-                   cursor:pointer; font:inherit; font-weight:600; display:inline-block; }
-    .btn.ghost, button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line); }
-    button:hover, .btn:hover { filter:brightness(1.08); text-decoration:none; }
-    label { display:block; font-weight:600; font-size:.85rem; margin-bottom:.7rem; }
-    label .hint { font-weight:400; color:var(--muted); }
-    input, select, textarea { font:inherit; font-weight:400; width:100%; margin-top:.3rem; padding:.55rem .7rem;
+    button, .btn { background:var(--accent); color:var(--accent-fg); border:0; border-radius:10px; padding:.55rem 1rem;
+                   cursor:pointer; font:inherit; font-weight:600; }
+    button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line); }
+    button.danger { background:var(--bad); color:#fff; }
+    label { display:block; font-weight:600; font-size:.85rem; margin-bottom:.6rem; }
+    input, select, textarea { font:inherit; font-weight:400; width:100%; margin-top:.25rem; padding:.5rem .65rem;
       border:1px solid var(--line); border-radius:10px; background:var(--soft); color:var(--fg); }
-    textarea { font-family:ui-monospace, Consolas, monospace; font-size:.82rem; resize:vertical; }
-    input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
-
-    .alert { border-radius:var(--radius); padding:.9rem 1.1rem; margin-bottom:1rem; font-weight:600;
+    .checks { display:flex; flex-wrap:wrap; gap:.3rem .9rem; font-weight:400; }
+    .checks label { display:inline-flex; gap:.3rem; align-items:center; font-weight:400; margin:0; }
+    .checks input { width:auto; margin:0; }
+    .alert { border-radius:var(--radius); padding:.8rem 1rem; margin-bottom:1rem; font-weight:600;
              background:var(--bad-soft); color:var(--bad); }
-    details > summary { cursor:pointer; color:var(--muted); font-size:.88rem; }
+    .htmx-indicator { display:none; } .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display:inline; }
+    details > summary { cursor:pointer; color:var(--muted); font-size:.86rem; }
     footer { max-width:1100px; margin:0 auto; padding:0 1rem 2rem; color:var(--muted); font-size:.8rem; }
   </style>
 </head>
 <body>
   <header class="top"><div class="in">
-    <a class="brand" href="/"><span class="mark">⚒</span>Forge</a>
+    <a class="brand" href="/"><span class="mark">◎</span>Scout</a>
     <nav>
-      <a href="/" class="{{ 'on' if request.url.path == '/' }}">Bounties</a>
-      <a href="/dashboard" class="{{ 'on' if request.url.path == '/dashboard' }}">Self-improvement</a>
+      {% set path = request.url.path %}
+      <a href="/" class="{{ 'on' if path == '/' }}">Find contributions</a>
+      <a href="/index" class="{{ 'on' if path == '/index' }}">Repo index</a>
+      <a href="/bounties" class="{{ 'on' if path == '/bounties' }}">Bounties</a>
+      <a href="/dashboard" class="{{ 'on' if path == '/dashboard' }}">Self-improvement</a>
     </nav>
     <span class="spacer"></span>
-    <span class="pill {{ 'warn' if mode == 'mock' else 'accent' }}" title="LLM mode">
-      {{ 'mock LLM' if mode == 'mock' else coder_model }}</span>
-    <span class="pill {{ 'warn' if ledger_kind == 'sqlite' else 'accent' }}" title="Ledger">
-      {{ 'mock ledger' if ledger_kind == 'sqlite' else 'Solana devnet' }}</span>
+    <span class="pill {{ 'warn' if mode == 'mock' else 'accent' }}">{{ 'mock LLM' if mode == 'mock' else 'open-weight LLM' }}</span>
+    <span class="pill {{ 'warn' if github_kind == 'fixtures' else 'accent' }}">{{ 'GitHub fixtures' if github_kind == 'fixtures' else 'GitHub API' }}</span>
+    <span class="pill {{ 'warn' if ledger_kind == 'sqlite' else 'accent' }}">{{ 'mock ledger' if ledger_kind == 'sqlite' else 'Solana devnet' }}</span>
   </div></header>
   <main>{% block body %}{% endblock %}</main>
-  <footer>Open-weight models · sandboxed tests · every number on this page comes from a stored run.</footer>
+  <footer>Open-weight models only · untrusted repo code runs in a sandbox · bounty payouts depend only on deterministic PR checks.</footer>
 </body>
 </html>
