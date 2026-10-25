@@ -66,3 +66,19 @@ class GitHub(Protocol):
     def checkout(self, full_name: str, dest: Path) -> Path:
         """Put the default branch source at dest (a fresh directory) and return it."""
         ...
+
+
+@dataclass
+class BatchRequest:
+    id: str
+    model: str
+    system: str
+    user: str
+
+
+class BatchLLM(Protocol):
+    """Many independent completions at once (DigitalOcean Batch Inference in cloud mode)."""
+
+    def run(self, requests: list[BatchRequest]) -> dict[str, Completion]:
+        """Results keyed by request id. Failed requests are missing from the result."""
+        ...
