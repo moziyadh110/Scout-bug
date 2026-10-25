@@ -50,6 +50,44 @@ def load_tasks(benchmarks_dir: Path) -> list[Task]:
     ]
 
 
+TASK_NAME = re.compile(r"^[a-z_][a-z0-9_]{1,40}$")
+MAX_PASTE = 20_000
+
+
+def user_bugs_dir(settings: Settings) -> Path:
+    return settings.forge_data_dir / "user_bugs"
+
+
+def find_task(settings: Settings, name: str) -> Task:
+    """Benchmark task or user-submitted bug. User bugs are never part of benchmark scores."""
+    if not TASK_NAME.match(name):
+        raise FileNotFoundError(name)
+    for root in (settings.benchmarks_dir, user_bugs_dir(settings)):
+        if (root / name / "meta.json").exists():
+            return load_task(root, name)
+    raise FileNotFoundError(name)
+
+
+def create_user_bug(settings: Settings, name: str, issue: str, code: str, test: str) -> Task:
+    """Write a pasted bug as <name>.py + test_<name>.py. Raises ValueError on bad input."""
+    if not TASK_NAME.match(name):
+        raise ValueError("name must be lowercase letters, digits or _, 2-41 chars")
+    if any((root / name).exists() for root in (settings.benchmarks_dir, user_bugs_dir(settings))):
+        raise ValueError(f"a bug named {name!r} already exists")
+    if not issue.strip() or not code.strip() or not test.strip():
+        raise ValueError("issue, code and test are all required")
+    if max(len(issue), len(code), len(test)) > MAX_PASTE:
+        raise ValueError(f"each field must be under {MAX_PASTE} characters")
+    d = user_bugs_dir(settings) / name
+    (d / "repo").mkdir(parents=True)
+    (d / "repo" / f"{name}.py").write_text(code.replace("\r\n", "\n"), encoding="utf-8")
+    (d / "repo" / f"test_{name}.py").write_text(test.replace("\r\n", "\n"), encoding="utf-8")
+    (d / "issue.md").write_text(issue.strip() + "\n", encoding="utf-8")
+    meta = {"name": name, "difficulty": "user", "split": "bounty", "source": "user-submitted"}
+    (d / "meta.json").write_text(json.dumps(meta, indent=2) + "\n")
+    return load_task(user_bugs_dir(settings), name)
+
+
 def _files_block(files: dict[str, str]) -> str:
     return "\n".join(f"### FILE: {n}\n```python\n{c}```" for n, c in files.items())
 

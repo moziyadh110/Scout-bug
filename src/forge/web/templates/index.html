@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
+{% if error %}<div class="card bad"><b>{{ error }}</b></div>{% endif %}
 <div class="grid">
   <div class="card"><div class="muted">Payer <code>{{ payer[:10] }}</code></div><b>{{ balances.payer | sol }} SOL</b></div>
   <div class="card"><div class="muted">Escrow</div><b>{{ balances.escrow | sol }} SOL</b></div>
@@ -22,6 +23,28 @@
     {% for t in tasks %}<p><b>{{ t.name }}</b></p><pre>{{ t.issue }}</pre>{% endfor %}
   </details>
 </div>
+
+{% if user_bugs %}
+<div class="card">
+  <h3 style="margin-top:0">Report a new bug</h3>
+  <p class="muted" style="margin-top:0">Paste the buggy code and a pytest test that fails on it. Forge runs the
+    test first and rejects the bug if the test already passes. Pasted bugs get bounties but never count toward
+    benchmark scores.</p>
+  <form method="post" action="/bugs" style="display:grid; gap:.6rem">
+    <label>Name (becomes <code>&lt;name&gt;.py</code> and <code>test_&lt;name&gt;.py</code>)<br>
+      <input name="name" required pattern="[a-z_][a-z0-9_]{1,40}" placeholder="average"></label>
+    <label>What's wrong<br>
+      <textarea name="issue" required rows="3" style="width:100%" placeholder="average() crashes on an empty list; it should return 0.0."></textarea></label>
+    <label>Buggy code (<code>&lt;name&gt;.py</code>)<br>
+      <textarea name="code" required rows="8" style="width:100%; font-family:monospace" placeholder="def average(xs):&#10;    return sum(xs) // len(xs)"></textarea></label>
+    <label>Test code (<code>test_&lt;name&gt;.py</code>, import with <code>from &lt;name&gt; import ...</code>)<br>
+      <textarea name="test" required rows="8" style="width:100%; font-family:monospace" placeholder="from average import average&#10;&#10;def test_empty():&#10;    assert average([]) == 0.0"></textarea></label>
+    <label>Bounty (SOL, max {{ cap | sol }})<br>
+      <input name="amount_sol" type="number" step="0.001" min="0.001" max="{{ cap / 1000000000 }}" value="0.01"></label>
+    <div><button type="submit">Check bug &amp; lock bounty</button></div>
+  </form>
+</div>
+{% endif %}
 
 <div class="card">
   <h3 style="margin-top:0">Bounties</h3>

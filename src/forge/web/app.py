@@ -1,4 +1,5 @@
 import asyncio
+import shutil
 import threading
 import uuid
 from collections.abc import AsyncIterator
@@ -12,7 +13,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse,
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from forge.agent import load_task, load_tasks, memory_example
+from forge.agent import create_user_bug, find_task, load_tasks, memory_example, user_bugs_dir
 from forge.bounty import Bounties, BountyError
 from forge.improve import latest, playbook_hash, verify, versions
 from forge.models import Playbook, Run, RunStatus
@@ -87,7 +88,7 @@ def create_app(deps: Deps) -> FastAPI:
         state = live[run_id]
         b = bounties.get(bounty_id)
         try:
-            task = load_task(deps.settings.benchmarks_dir, b.task_id)
+            task = find_task(deps.settings, b.task_id)
             pb, version = current_playbook()
             run = deps.agent.solve(task, pb, playbook_hash(pb), version, state.emit, run_id)
             deps.store.put_json(f"traces/{run.id}.json", run.model_dump(mode="json"))
@@ -117,14 +118,18 @@ def create_app(deps: Deps) -> FastAPI:
         return {"status": "ok", "mode": deps.mode, "ledger": deps.settings.ledger_kind}
 
     @app.get("/", response_class=HTMLResponse)
-    def index(request: Request) -> HTMLResponse:
+    def index(request: Request, error: str = "", status_code: int = 200) -> HTMLResponse:
         payer = deps.ledger.payer_account()
         _, version = current_playbook()
         return tpl.TemplateResponse(
             request,
             "index.html",
-            {
-                "tasks": load_tasks(deps.settings.benchmarks_dir),
+            status_code=status_code,
+            context={
+                "error": error,
+                "user_bugs": deps.settings.user_bugs_enabled,
+                "tasks": load_tasks(deps.settings.benchmarks_dir)
+                + load_tasks(user_bugs_dir(deps.settings)),
                 "bounties": bounties.all(),
                 "payer": payer,
                 "version": version,
@@ -139,12 +144,7 @@ def create_app(deps: Deps) -> FastAPI:
             },
         )
 
-    @app.post("/bounties")
-    async def create_bounty(task_id: str = Form(...), amount_sol: float = Form(...)) -> Any:
-        try:
-            load_task(deps.settings.benchmarks_dir, task_id)
-        except FileNotFoundError:
-            raise HTTPException(404, "unknown task") from None
+    async def launch(task_id: str, amount_sol: float) -> RedirectResponse:
         try:
             b = await asyncio.to_thread(
                 bounties.create, task_id, deps.ledger.payer_account(), round(amount_sol * LAMPORTS)
@@ -158,6 +158,39 @@ def create_app(deps: Deps) -> FastAPI:
         tasks_bg.add(t)
         t.add_done_callback(tasks_bg.discard)
         return RedirectResponse(f"/runs/{run_id}", status_code=303)
+
+    @app.post("/bounties")
+    async def create_bounty(task_id: str = Form(...), amount_sol: float = Form(...)) -> Any:
+        try:
+            find_task(deps.settings, task_id)
+        except FileNotFoundError:
+            raise HTTPException(404, "unknown task") from None
+        return await launch(task_id, amount_sol)
+
+    @app.post("/bugs")
+    async def create_bug(
+        request: Request,
+        name: str = Form(...),
+        issue: str = Form(...),
+        code: str = Form(...),
+        test: str = Form(...),
+        amount_sol: float = Form(...),
+    ) -> Any:
+        if not deps.settings.user_bugs_enabled:
+            raise HTTPException(403, "pasted bugs are disabled without a hardened sandbox")
+        if not 0 < round(amount_sol * LAMPORTS) <= deps.settings.bounty_cap_lamports:
+            return index(request, "Bounty amount is outside the allowed range.", 400)
+        try:
+            task = create_user_bug(deps.settings, name.strip(), issue, code, test)
+        except ValueError as e:
+            return index(request, str(e), 400)
+        # A bug must be proven: its test has to fail (or hang) on the submitted code.
+        result = await asyncio.to_thread(deps.sandbox.run_tests, task.repo_dir, {})
+        if result.passed or result.exit_code == 5:  # 5 = pytest collected no tests
+            shutil.rmtree(task.repo_dir.parent)
+            why = "the test passes on this code" if result.passed else "no tests were found"
+            return index(request, f"Rejected: {why}, so there is no bug to fix.", 400)
+        return await launch(task.name, amount_sol)
 
     def _bounty_for(run_id: str) -> Any:
         return next((b for b in bounties.all() if b.run_id == run_id), None)
@@ -180,8 +213,8 @@ def create_app(deps: Deps) -> FastAPI:
                 "finished": finished,
                 "events": events,
                 "explorer": deps.ledger.explorer_url,
-                "task": load_task(
-                    deps.settings.benchmarks_dir,
+                "task": find_task(
+                    deps.settings,
                     bounty.task_id if bounty else Run.model_validate(stored).task_id,
                 ),
             },

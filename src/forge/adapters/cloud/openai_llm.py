@@ -25,7 +25,10 @@ class OpenAICompatLLM:
             {"role": "user", "content": user}
         ]
         r = self.client.chat.completions.create(
-            model=model, messages=messages, temperature=0, max_tokens=4096  # type: ignore[arg-type]
+            model=model,
+            messages=messages,
+            temperature=0,
+            max_tokens=4096,  # type: ignore[arg-type]
         )
         text = r.choices[0].message.content or ""
         tokens = r.usage.total_tokens if r.usage else 0

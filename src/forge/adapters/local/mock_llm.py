@@ -39,6 +39,8 @@ class MockLLM:
             return ""
         name = m.group(1).removesuffix(".py")
         task = self.benchmarks / name
+        if not (task / "meta.json").exists():  # user-submitted bug: the mock has no script for it
+            return "I could not find a fix."
         meta = json.loads((task / "meta.json").read_text())
         helped = "## PREVIOUS ATTEMPT FAILED" in user or "## SIMILAR PAST FIXES" in user
         src = task / ("fix" if meta["difficulty"] == "easy" or helped else "repo") / f"{name}.py"

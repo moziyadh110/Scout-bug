@@ -35,6 +35,15 @@ class Settings(BaseSettings):
     solana_treasury_keypair: Path = Path("keys/treasury.keypair.json")
     solana_payer_keypair: Path = Path("keys/payer.keypair.json")
 
+    # Pasted bugs run user code; the local sandbox is best-effort, so default off in cloud.
+    allow_user_bugs: bool | None = None
+
+    @property
+    def user_bugs_enabled(self) -> bool:
+        if self.allow_user_bugs is not None:
+            return self.allow_user_bugs
+        return self.forge_env == "local"
+
     @property
     def llm_kind(self) -> str:
         return self.forge_llm or ("openai" if self.forge_env == "cloud" else "mock")
