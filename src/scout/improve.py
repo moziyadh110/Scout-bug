@@ -126,7 +126,9 @@ class Evaluator:
     def __init__(self, deps: Deps, items: list[BacktestItem]) -> None:
         self.deps, self.items = deps, items
         self.hash = backtest_hash(items)
-        repos = {r.full_name: r for r in discover(deps.github, deps.settings)[0]}
+        # Exactly the repos the items come from: a fresh search can return a different set.
+        names = sorted({i.issue.repo for i in items})
+        repos = {n: deps.github.repo(n) for n in names}
         self.repos, self.health = repos, {k: health(r) for k, r in repos.items()}
         self._classes: dict[str, dict[str, Any]] = {}
 

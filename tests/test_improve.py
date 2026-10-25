@@ -68,3 +68,9 @@ def test_nightly_refuses_to_mix_mock_and_real(deps):
     deps.settings.scout_llm = "openai"
     with pytest.raises(RuntimeError, match="separate SCOUT_DATA_DIR"):
         nightly(deps)
+
+
+def test_evaluator_uses_the_backtest_repos_not_a_new_search(deps, monkeypatch):
+    items = build_backtest(deps)
+    monkeypatch.setattr(deps.github, "search_repos", lambda *a, **k: [])  # search moved on
+    assert Evaluator(deps, items).evaluate(SEED).n_issues == 20
