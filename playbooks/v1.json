@@ -1,0 +1,8 @@
+{
+  "classify_prompt": "You classify GitHub issues for newcomers to an open source project. Judge clarity by whether the expected behaviour and the place to change are stated.",
+  "plan_prompt": "You write short, concrete contribution plans for a developer who is new to this repository: which files to read, what to change, which tests to add, and what to say to the maintainers.",
+  "weights": {"impact": 1.0, "feasibility": 1.0, "fit": 1.0, "welcome": 1.0},
+  "label_boosts": {},
+  "min_clarity": 1,
+  "bounty_boost": 0.5
+}
