@@ -1,0 +1,935 @@
+{
+ "acme/tinycsv": [
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 101,
+    "title": "Add skip_blank_lines option to read_rows",
+    "body": "read_rows returns empty rows for blank lines; add skip_blank_lines=True.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "good first issue",
+     "enhancement"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-230d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-220d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "ana1",
+      "association": "NONE",
+      "created_at": "-205d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-200d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1101,
+    "author": "ana1",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     101
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-200d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 102,
+    "title": "Typo in README quoting section",
+    "body": "The README says seperator; it should say separator.",
+    "labels": [
+     "good first issue",
+     "documentation"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-240d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-230d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "bo2",
+      "association": "NONE",
+      "created_at": "-215d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-210d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1102,
+    "author": "bo2",
+    "author_association": "FIRST_TIMER",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     102
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-210d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 103,
+    "title": "write_rows should accept tuples",
+    "body": "write_rows fails when rows are tuples instead of lists.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "good first issue"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-250d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-240d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "cy3",
+      "association": "NONE",
+      "created_at": "-225d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-220d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1103,
+    "author": "cy3",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     103
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-220d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 104,
+    "title": "Rewrite the parser as a state machine",
+    "body": "The parser should be redesigned as a state machine. This is a large change touching most of the package and needs a design first.",
+    "labels": [
+     "refactor"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-260d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-250d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-230d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1104,
+    "author": "maria",
+    "author_association": "OWNER",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     104
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-230d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 105,
+    "title": "Performance is bad",
+    "body": "It is slow.",
+    "labels": [],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-270d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-260d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-240d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1105,
+    "author": "lee",
+    "author_association": "CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     105
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-240d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 106,
+    "title": "Add a test for trailing newline handling",
+    "body": "There is no test for input that ends with a newline; add one to tests/test_tinycsv.py.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tests/test_tinycsv.py.",
+    "labels": [
+     "good first issue",
+     "testing"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-280d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-270d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "di4",
+      "association": "NONE",
+      "created_at": "-255d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-250d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1106,
+    "author": "di4",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     106
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-250d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 107,
+    "title": "Support Excel dialect quirks",
+    "body": "Excel writes CSV with a BOM and CRLF line endings, and quotes fields differently in several places; support those quirks behind a dialect option.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "enhancement"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-290d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-280d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-260d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1107,
+    "author": "lee",
+    "author_association": "CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     107
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-260d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 108,
+    "title": "Crash with very large files",
+    "body": "read_rows raises MemoryError on a 2 GB file; it should stream rows instead of loading everything.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "bug"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-300d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-290d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-270d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1108,
+    "author": "maria",
+    "author_association": "OWNER",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     108
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-270d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 109,
+    "title": "Decide on the 2.0 API",
+    "body": "Let's discuss what 2.0 should look like. Design discussion across the whole API.",
+    "labels": [
+     "discussion"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-310d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-300d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-280d",
+   "closing_pr": null
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 110,
+    "title": "Docstring for read_rows is wrong",
+    "body": "The docstring says it returns tuples but it returns lists.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "good first issue",
+     "documentation"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-320d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-310d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "ed5",
+      "association": "NONE",
+      "created_at": "-295d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-290d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1110,
+    "author": "ed5",
+    "author_association": "FIRST_TIMER",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     110
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-290d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 111,
+    "title": "Recent fix outside the window",
+    "body": "too recent\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "good first issue"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-60d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-50d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "fy6",
+      "association": "NONE",
+      "created_at": "-35d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-30d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1111,
+    "author": "fy6",
+    "author_association": "FIRST_TIMER",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     111
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-30d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/tinycsv",
+    "number": 112,
+    "title": "Ancient fix outside the window",
+    "body": "too old\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tinycsv/__init__.py.",
+    "labels": [
+     "good first issue"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-530d",
+    "comments": [
+     {
+      "author": "maria",
+      "association": "OWNER",
+      "created_at": "-520d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "gi7",
+      "association": "NONE",
+      "created_at": "-505d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-500d",
+   "closing_pr": {
+    "repo": "acme/tinycsv",
+    "number": 1112,
+    "author": "gi7",
+    "author_association": "FIRST_TIMER",
+    "merged": true,
+    "merged_by": "maria",
+    "base_ref": "main",
+    "closes_issues": [
+     112
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-500d"
+   }
+  }
+ ],
+ "acme/dateparse": [
+  {
+   "issue": {
+    "repo": "acme/dateparse",
+    "number": 201,
+    "title": "Parse ordinal suffixes like 1st and 2nd",
+    "body": "parse('March 1st 2024') fails; strip ordinal suffixes before parsing.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in dateparse/__init__.py.",
+    "labels": [
+     "good first issue",
+     "enhancement"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-235d",
+    "comments": [
+     {
+      "author": "ivo",
+      "association": "MEMBER",
+      "created_at": "-225d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "ha8",
+      "association": "NONE",
+      "created_at": "-210d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-205d",
+   "closing_pr": {
+    "repo": "acme/dateparse",
+    "number": 1201,
+    "author": "ha8",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "ivo",
+    "base_ref": "main",
+    "closes_issues": [
+     201
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-205d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/dateparse",
+    "number": 202,
+    "title": "Update the timezone database",
+    "body": "The bundled timezone data is outdated; regenerate it from the latest tzdata release and adjust the loader where names changed.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in dateparse/tz.py.",
+    "labels": [
+     "bug"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-245d",
+    "comments": [
+     {
+      "author": "ivo",
+      "association": "MEMBER",
+      "created_at": "-235d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-215d",
+   "closing_pr": {
+    "repo": "acme/dateparse",
+    "number": 1202,
+    "author": "ivo",
+    "author_association": "MEMBER",
+    "merged": true,
+    "merged_by": "ivo",
+    "base_ref": "main",
+    "closes_issues": [
+     202
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-215d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/dateparse",
+    "number": 203,
+    "title": "Locale-aware month names",
+    "body": "Month names should follow the user's locale. This touches most modules and the public API; needs a design across the package.",
+    "labels": [
+     "enhancement"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-255d",
+    "comments": [
+     {
+      "author": "ivo",
+      "association": "MEMBER",
+      "created_at": "-245d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-225d",
+   "closing_pr": {
+    "repo": "acme/dateparse",
+    "number": 1203,
+    "author": "ana",
+    "author_association": "CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "ivo",
+    "base_ref": "main",
+    "closes_issues": [
+     203
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-225d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/dateparse",
+    "number": 204,
+    "title": "Add an example to the README for parse()",
+    "body": "The README has no example for parse(); it should show one call with the expected output.",
+    "labels": [
+     "good first issue",
+     "documentation"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-265d",
+    "comments": [
+     {
+      "author": "ivo",
+      "association": "MEMBER",
+      "created_at": "-255d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "io9",
+      "association": "NONE",
+      "created_at": "-240d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-235d",
+   "closing_pr": {
+    "repo": "acme/dateparse",
+    "number": 1204,
+    "author": "io9",
+    "author_association": "FIRST_TIMER",
+    "merged": true,
+    "merged_by": "ivo",
+    "base_ref": "main",
+    "closes_issues": [
+     204
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-235d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/dateparse",
+    "number": 205,
+    "title": "Flaky DST test",
+    "body": "test_dst fails on the night of the DST switch; freeze the clock in the test.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in tests/test_dateparse.py.",
+    "labels": [
+     "bug",
+     "testing"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-275d",
+    "comments": [
+     {
+      "author": "ivo",
+      "association": "MEMBER",
+      "created_at": "-265d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-245d",
+   "closing_pr": {
+    "repo": "acme/dateparse",
+    "number": 1205,
+    "author": "ivo",
+    "author_association": "MEMBER",
+    "merged": true,
+    "merged_by": "ivo",
+    "base_ref": "main",
+    "closes_issues": [
+     205
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-245d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "acme/dateparse",
+    "number": 206,
+    "title": "Refactor internals for speed",
+    "body": "Large refactor of the internals across modules for speed. Needs a design.",
+    "labels": [
+     "refactor"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-285d",
+    "comments": [
+     {
+      "author": "ivo",
+      "association": "MEMBER",
+      "created_at": "-275d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-255d",
+   "closing_pr": {
+    "repo": "acme/dateparse",
+    "number": 1206,
+    "author": "ivo",
+    "author_association": "MEMBER",
+    "merged": true,
+    "merged_by": "ivo",
+    "base_ref": "main",
+    "closes_issues": [
+     206
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-255d"
+   }
+  }
+ ],
+ "solo/quicktoml": [
+  {
+   "issue": {
+    "repo": "solo/quicktoml",
+    "number": 301,
+    "title": "Inline tables",
+    "body": "Support them.",
+    "labels": [],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-230d",
+    "comments": [
+     {
+      "author": "solo",
+      "association": "OWNER",
+      "created_at": "-220d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-200d",
+   "closing_pr": {
+    "repo": "solo/quicktoml",
+    "number": 1301,
+    "author": "solo",
+    "author_association": "OWNER",
+    "merged": true,
+    "merged_by": "solo",
+    "base_ref": "main",
+    "closes_issues": [
+     301
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-200d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "solo/quicktoml",
+    "number": 302,
+    "title": "Fix a typo in an error message",
+    "body": "The error says 'unexpeted'; it should say 'unexpected'.",
+    "labels": [
+     "good first issue"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-240d",
+    "comments": [
+     {
+      "author": "solo",
+      "association": "OWNER",
+      "created_at": "-230d",
+      "body": "Thanks, a PR would be welcome."
+     },
+     {
+      "author": "jo10",
+      "association": "NONE",
+      "created_at": "-215d",
+      "body": "I'd like to work on this as my first contribution!"
+     }
+    ]
+   },
+   "closed_at": "-210d",
+   "closing_pr": {
+    "repo": "solo/quicktoml",
+    "number": 1302,
+    "author": "jo10",
+    "author_association": "FIRST_TIME_CONTRIBUTOR",
+    "merged": true,
+    "merged_by": "solo",
+    "base_ref": "main",
+    "closes_issues": [
+     302
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-210d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "solo/quicktoml",
+    "number": 303,
+    "title": "Datetime support",
+    "body": "Parse TOML offset date-times into datetime objects, including the local date-time and local time forms from the spec.\n\nSteps: call the function with an example input.\nExpected: it should work as described. The code is in quicktoml/__init__.py.",
+    "labels": [
+     "enhancement"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-250d",
+    "comments": [
+     {
+      "author": "solo",
+      "association": "OWNER",
+      "created_at": "-240d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-220d",
+   "closing_pr": {
+    "repo": "solo/quicktoml",
+    "number": 1303,
+    "author": "solo",
+    "author_association": "OWNER",
+    "merged": true,
+    "merged_by": "solo",
+    "base_ref": "main",
+    "closes_issues": [
+     303
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-220d"
+   }
+  },
+  {
+   "issue": {
+    "repo": "solo/quicktoml",
+    "number": 304,
+    "title": "Spec compliance",
+    "body": "Become fully compliant with TOML 1.0 across the whole parser; large design work.",
+    "labels": [
+     "refactor"
+    ],
+    "state": "closed",
+    "author": "reporter",
+    "created_at": "-260d",
+    "comments": [
+     {
+      "author": "solo",
+      "association": "OWNER",
+      "created_at": "-250d",
+      "body": "Thanks, a PR would be welcome."
+     }
+    ]
+   },
+   "closed_at": "-230d",
+   "closing_pr": {
+    "repo": "solo/quicktoml",
+    "number": 1304,
+    "author": "solo",
+    "author_association": "OWNER",
+    "merged": true,
+    "merged_by": "solo",
+    "base_ref": "main",
+    "closes_issues": [
+     304
+    ],
+    "ci_state": "success",
+    "additions": 20,
+    "deletions": 4,
+    "changed_files": 2,
+    "merged_at": "-230d"
+   }
+  }
+ ]
+}

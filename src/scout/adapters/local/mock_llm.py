@@ -24,12 +24,37 @@ class MockLLM:
             text = self._classify(_blocks(user).get("ISSUE", ""))
         elif "## TASK: PLAN" in user:
             text = self._plan(_blocks(user))
+        elif "## TASK: IMPROVE" in user:
+            text = self._improve(user)
         else:
             text = ""
         return Completion(text, (len(system) + len(user) + len(text)) // 4, "mock")
 
     def list_models(self) -> list[str]:
         return ["mock"]
+
+    @staticmethod
+    def _improve(user: str) -> str:
+        """Fixed, readable proposals (one deliberately bad) for the current playbook."""
+        cur = json.loads(user.split("## CURRENT PLAYBOOK\n", 1)[1].split("\n## SCORE", 1)[0])
+        out = []
+        if "good first issue" not in cur["label_boosts"]:
+            out.append(
+                {
+                    "label_boosts": {"good first issue": 1.5},
+                    "rationale": "Maintainer-labelled starter issues are solved by newcomers.",
+                }
+            )
+        if cur["weights"].get("feasibility", 1) < 2:
+            out.append(
+                {
+                    "weights": {"feasibility": 2.0},
+                    "rationale": "Small, clear issues matter more than impact for newcomers.",
+                }
+            )
+        if cur["weights"].get("impact", 1) < 3:
+            out.append({"weights": {"impact": 3.0}, "rationale": "Prefer high-impact work."})
+        return json.dumps(out)
 
     @staticmethod
     def _plan(blocks: dict[str, str]) -> str:
