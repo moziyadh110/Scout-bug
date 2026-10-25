@@ -14,14 +14,13 @@
 
 <div class="grid g3">
   <div class="card"><h2>Fund an issue</h2>
-    {% if opted %}
     <form method="post" action="/bounties">
-      <label>Repo (opted in)<select name="repo">{% for r in opted %}<option>{{ r }}</option>{% endfor %}</select></label>
+      <label>Repo <span class="hint">must have .scout.yml with bounties: true</span><input name="repo" list="opted-repos" required placeholder="owner/repo" value="{{ opted[0] if opted else '' }}"><datalist id="opted-repos">{% for r in opted %}<option value="{{ r }}">{% endfor %}</datalist></label>
       <label>Issue number<input name="issue" type="number" min="1" required value="12"></label>
       <label>Amount <span class="muted">test USDC, max {{ cap | usdc }}</span><input name="usdc" type="number" step="0.01" min="0.01" value="10"></label>
       <button>Lock in escrow</button>
     </form>
-    {% else %}<p class="muted">No indexed repo has opted in. Build the index first.</p>{% endif %}
+
   </div>
   <div class="card"><h2>Wallets</h2>
     <p class="small">Funder <span class="mono" title="{{ funder }}">{{ funder[:6] ~ "…" ~ funder[-4:] if funder | length > 14 else funder }}</span>: <b>{{ balances.funder | usdc }}</b> test USDC</p>
