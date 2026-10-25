@@ -24,7 +24,7 @@
     {% else %}<p class="muted">No indexed repo has opted in. Build the index first.</p>{% endif %}
   </div>
   <div class="card"><h2>Wallets</h2>
-    <p class="small">Funder <span class="mono">{{ funder }}</span>: <b>{{ balances.funder | usdc }}</b> test USDC</p>
+    <p class="small">Funder <span class="mono" title="{{ funder }}">{{ funder[:6] ~ "…" ~ funder[-4:] if funder | length > 14 else funder }}</span>: <b>{{ balances.funder | usdc }}</b> test USDC</p>
     <p class="small">Escrow: <b>{{ balances.escrow | usdc }}</b> test USDC</p>
     <p class="muted small">Dispute window: {{ window }} s</p>
     <form method="post" action="/bounties/tick"><button class="ghost">Poll merges &amp; settle due</button></form>
@@ -53,7 +53,10 @@
         {% set left = (b.dispute_until - now).total_seconds() | int %}
         {% if left > 0 %}dispute window: {{ left }} s left{% else %}window over — release on next tick{% endif %}<br>{% endif %}
       <span class="muted">{{ b.note }}</span>
-      {% if b.credential_ref %}<div class="muted mono">credential {{ b.credential_ref }}</div>{% endif %}</td>
+      <div class="small" style="margin-top:.3rem">
+      {% for label, ref in [('fund tx', b.escrow_ref), ('payout tx', b.settle_ref), ('credential', b.credential_ref)] if ref %}
+        {% set u = explorer(ref) %}{% if u %}<a href="{{ u }}" target="_blank" rel="noopener">{{ label }} ↗</a>{% else %}<span class="muted mono">{{ label }} {{ ref[:14] }}</span>{% endif %}{{ ' · ' if not loop.last }}
+      {% endfor %}</div></td>
     <td>{% if b.state.value == 'verified' %}
       <form method="post" action="/bounties/{{ b.id }}/dispute"><input type="hidden" name="reason" value="disputed by funder">
         <button class="danger">Dispute</button></form>{% endif %}</td>

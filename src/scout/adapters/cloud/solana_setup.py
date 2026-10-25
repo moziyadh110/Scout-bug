@@ -20,7 +20,7 @@ from spl.token.instructions import (
 )
 from spl.token.models import InitializeMintParams, MintToCheckedParams
 
-from scout.adapters.cloud.solana_ledger import _run, load_keypair
+from scout.adapters.cloud.solana_ledger import _run, confirm, load_keypair
 from scout.config import Settings
 
 DECIMALS = 6
@@ -59,7 +59,7 @@ def setup(s: Settings) -> dict[str, Any]:
         bh = (await c.get_latest_blockhash(Confirmed)).value.blockhash
         tx = VersionedTransaction(MessageV0.try_compile(payer.pubkey(), ixs, [], bh), signers)
         sig = (await c.send_transaction(tx)).value
-        await c.confirm_transaction(sig, Confirmed)
+        await confirm(c, sig)
         return str(sig)
 
     async def go() -> None:
@@ -68,7 +68,7 @@ def setup(s: Settings) -> dict[str, Any]:
             if (await c.get_balance(funder.pubkey(), Confirmed)).value < MIN_SOL + ESCROW_SOL:
                 try:
                     asig = (await c.request_airdrop(funder.pubkey(), AIRDROP, Confirmed)).value
-                    await c.confirm_transaction(asig, Confirmed)
+                    await confirm(c, asig)
                     log.append("airdropped 1 SOL to the funder")
                 except Exception as e:
                     raise RuntimeError(

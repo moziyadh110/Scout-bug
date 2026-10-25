@@ -2,4 +2,4 @@
 <details><summary>details</summary><pre>stored     {{ r.stored_hash }}
 recomputed {{ r.recomputed_hash }}
 on ledger  {{ r.ledger_memo }}{% if r.error %}
-error      {{ r.error }}{% endif %}</pre></details>
+error      {{ r.error }}{% endif %}</pre>{% if r.explorer_url %}<a href="{{ r.explorer_url }}" target="_blank" rel="noopener">view on Solana explorer ↗</a>{% endif %}</details>

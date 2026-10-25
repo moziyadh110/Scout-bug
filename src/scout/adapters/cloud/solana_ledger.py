@@ -22,6 +22,7 @@ from solders.message import MessageV0
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
+from solders.transaction_status import TransactionConfirmationStatus as Status
 from spl.memo.constants import MEMO_PROGRAM_ID
 from spl.memo.instructions import create_memo
 from spl.memo.models import MemoParams
@@ -52,6 +53,25 @@ def _run[T](coro: Coroutine[Any, Any, T]) -> T:
     # ponytail: blocks the caller's loop for one RPC round trip; fine for this app's traffic.
     with ThreadPoolExecutor(1) as ex:
         return ex.submit(asyncio.run, coro).result()
+
+
+async def confirm(c: AsyncClient, sig: Signature, timeout: float = 90.0) -> None:
+    """Wait for 'confirmed', polling gently; public devnet RPC rate-limits fast polling."""
+    delay, waited = 1.0, 0.0
+    while waited < timeout:
+        try:
+            st = (await c.get_signature_statuses([sig])).value[0]
+        except Exception:  # transient RPC error (often HTTP 429): back off and retry
+            st = None
+        if st is not None:
+            if st.err is not None:
+                raise RuntimeError(f"transaction {sig} failed: {st.err}")
+            if st.confirmation_status in (Status.Confirmed, Status.Finalized):
+                return
+        await asyncio.sleep(delay)
+        waited += delay
+        delay = min(delay * 1.5, 5.0)
+    raise TimeoutError(f"transaction {sig} not confirmed after {timeout:.0f}s")
 
 
 class SolanaLedger:
@@ -107,7 +127,7 @@ class SolanaLedger:
                     msg = MessageV0.try_compile(payer.pubkey(), ixs, [], bh)
                     tx = VersionedTransaction(msg, [payer, *[k for k in signers if k != payer]])
                     sig = (await c.send_transaction(tx)).value
-                    await c.confirm_transaction(sig, Confirmed)
+                    await confirm(c, sig)
                     return str(sig)
 
             sig = _run(go())
