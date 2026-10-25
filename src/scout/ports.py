@@ -16,7 +16,7 @@ class Completion:
 
 
 @dataclass
-class TestResult:
+class RunResult:
     exit_code: int
     output: str
     timed_out: bool
@@ -32,8 +32,18 @@ class LLMProvider(Protocol):
 
 
 class Sandbox(Protocol):
-    def run_tests(self, repo_dir: Path, files: dict[str, str]) -> TestResult:
-        """Copy repo_dir, overlay files, run pytest. Never touches repo_dir."""
+    def run(
+        self,
+        repo_dir: Path,
+        args: list[str],
+        files: dict[str, str] | None = None,
+        execute_repo_code: bool = True,
+    ) -> RunResult:
+        """Run `python <args>` on a private copy of repo_dir with `files` overlaid.
+
+        Never touches repo_dir and never exposes host secrets. execute_repo_code=False is
+        for static tools (ruff, mypy) that read the code without running it.
+        """
         ...
 
 

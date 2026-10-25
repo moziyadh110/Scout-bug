@@ -137,6 +137,8 @@ class IndexSnapshot(BaseModel):
     dropped_issues: dict[str, str]  # issue key -> reason
     skipped_repos: dict[str, str]  # repo -> reason
     mode: str
+    tool_status: dict[str, str] = {}
+    classify_failed: list[str] = []
 
 
 # --- Matching --------------------------------------------------------------------------

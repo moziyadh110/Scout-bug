@@ -96,7 +96,7 @@ def draft_patch(
             "### FILE: <name>\n```python\n<entire file>\n```",
         )
         files = parse_files(reply, set(src))
-        result = sandbox.run_tests(repo_dir, files)
+        result = sandbox.run(repo_dir, ["-m", "pytest", "-q", "-p", "no:cacheprovider"], files)
         attempt = Attempt(n + 1, _diff(src, files), result.passed, result.output)
         draft.attempts.append(attempt)
         if attempt.passed:
