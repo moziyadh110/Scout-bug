@@ -48,9 +48,13 @@ def build(settings: Settings | None = None) -> Deps:
     else:
         ledger = SqliteLedger(s.scout_data_dir / "ledger.sqlite3")
 
+    github: GitHub
     if s.github_kind == "api":
-        raise RuntimeError("the live GitHub adapter is not implemented yet (needs go-ahead)")
-    github = FixtureGitHub(s.fixtures_dir)
+        from scout.adapters.cloud.github_api import GitHubAPI
+
+        github = GitHubAPI(s.github_token, s.discover_limit, s.backtest_per_repo, s.max_tarball_mb)
+    else:
+        github = FixtureGitHub(s.fixtures_dir)
 
     sandbox = SubprocessSandbox(s.sandbox_timeout_seconds, _secrets(s))
     # ponytail: DigitalOcean Batch Inference adapter comes with cloud work; in-process now.

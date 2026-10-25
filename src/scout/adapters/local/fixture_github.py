@@ -80,7 +80,7 @@ class FixtureGitHub:
         pulls = [PullRequest.model_validate(p) for p in self._load("pulls").get(full_name, [])]
         return [p for p in pulls if issue_number in p.closes_issues]
 
-    def has_write_access(self, full_name: str, login: str) -> bool:
+    def has_write_access(self, full_name: str, login: str) -> bool | None:
         return login in self._load("collaborators").get(full_name, [])
 
     def closed_issues(

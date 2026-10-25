@@ -35,10 +35,31 @@ def opted_in(scout_yml: str | None) -> bool:
     return bool(scout_yml and OPT_IN.search(scout_yml))
 
 
+MAINTAINERS = re.compile(r"^\s*maintainers\s*:\s*\[([^\]]*)\]", re.I | re.M)
+
+
+def declared_maintainers(scout_yml: str | None) -> set[str]:
+    """`maintainers: [a, b]` in .scout.yml (only someone with write access can commit it)."""
+    m = MAINTAINERS.search(scout_yml or "")
+    return {x.strip().strip("'\"@") for x in m.group(1).split(",") if x.strip()} if m else set()
+
+
+def merger_has_write(deps: Deps, repo: str, default_branch: str, merger: str) -> tuple[bool, str]:
+    access = deps.github.has_write_access(repo, merger)
+    if access is not None:
+        return access, "per GitHub permissions"
+    # A read-only token cannot read permissions: use the maintainers the repo declares.
+    declared = declared_maintainers(deps.github.read_file(repo, ".scout.yml", default_branch))
+    return merger in declared, "per .scout.yml maintainers"
+
+
 def pr_checks(deps: Deps, b: Bounty, pr: PullRequest) -> list[Check]:
     repo = deps.github.repo(b.repo)
     lines = pr.additions + pr.deletions
     merger = pr.merged_by or ""
+    write, source = (
+        merger_has_write(deps, b.repo, repo.default_branch, merger) if merger else (False, "")
+    )
     return [
         Check(
             name="merged to default branch",
@@ -47,10 +68,8 @@ def pr_checks(deps: Deps, b: Bounty, pr: PullRequest) -> list[Check]:
         ),
         Check(
             name="merged by someone else with write access",
-            ok=bool(merger)
-            and merger != pr.author
-            and deps.github.has_write_access(b.repo, merger),
-            detail=f"author={pr.author}, merged_by={merger or '-'}",
+            ok=bool(merger) and merger != pr.author and write,
+            detail=f"author={pr.author}, merged_by={merger or '-'}, write={write} {source}",
         ),
         Check(
             name="PR closes the issue",

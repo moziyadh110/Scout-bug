@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     discover_min_stars: int = 200
     discover_max_stars: int = 20_000
     discover_pushed_within_days: int = 90
+    discover_limit: int = 8  # repos fetched per search on the live API
+    backtest_per_repo: int = 15
+    max_tarball_mb: int = 50
     min_health: float = 0.5
     gap_top_n_repos: int = 5
     # Matching
